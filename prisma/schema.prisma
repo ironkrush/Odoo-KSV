@@ -14,6 +14,13 @@ model User {
   name         String
   passwordHash String
   role         String   // "PROCUREMENT_OFFICER" | "APPROVER_L1" | "APPROVER_L2" | "VENDOR"
+  
+  // Extra columns for Officers / Approvers / Users
+  phone         String?
+  department    String?   // e.g. "Procurement", "Finance", "Logistics"
+  designation   String?   // e.g. "Lead Buyer", "Head of Finance"
+  approvalLimit Float     @default(0.0) // E.g., maximum budget amount they can approve
+
   vendorId     Int?     // Non-null ONLY if role is "VENDOR"
   vendor       Vendor?  @relation(fields: [vendorId], references: [id])
   
@@ -36,6 +43,19 @@ model Vendor {
   status    String   // "ACTIVE" | "PENDING" | "BLOCKED"
   email     String   @unique
   
+  // Extra columns for Vendor profiles
+  address      String?
+  city         String?
+  state        String?
+  pincode      String?
+  panNo        String?   @unique
+  bankName     String?
+  bankAccNo    String?
+  ifscCode     String?
+  website      String?
+  paymentTerms String    @default("Net 30") // e.g. "Net 15", "Net 30", "Net 45"
+  rating       Float     @default(5.0)
+
   // Relations
   users           User[]
   rfqInvitations  RFQVendor[]

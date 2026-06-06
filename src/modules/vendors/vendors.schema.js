@@ -7,6 +7,19 @@ export const createVendorSchema = z.object({
   contactNo: z.string().min(8, 'Contact number must be at least 8 digits'),
   status: z.enum(['ACTIVE', 'PENDING', 'BLOCKED']).default('PENDING'),
   email: z.string().email('Invalid email address'),
+  
+  // Extra columns
+  address: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  pincode: z.string().optional().nullable(),
+  panNo: z.string().optional().nullable(),
+  bankName: z.string().optional().nullable(),
+  bankAccNo: z.string().optional().nullable(),
+  ifscCode: z.string().optional().nullable(),
+  website: z.string().optional().nullable(),
+  paymentTerms: z.string().optional().default('Net 30'),
+  rating: z.number().min(1.0).max(5.0).optional().default(5.0),
 });
 
 export const updateVendorSchema = createVendorSchema.partial();

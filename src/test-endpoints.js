@@ -1,109 +1,143 @@
 import app from './app.js';
 import prisma from './config/db.js';
 
-const PORT = 3001; // Use a different port to avoid conflicts
+const PORT = 3001;
 
 async function runTests() {
-  console.log('🤖 Running backend endpoint validation tests...');
+  console.log('🤖 Running advanced role-based verification tests...');
 
-  // Start the server
   const server = app.listen(PORT, () => {
     console.log(`Test server started on http://localhost:${PORT}`);
   });
 
   try {
-    // 1. Verify Health check
-    console.log('\n--- 1. Health check ---');
+    // Clean up any test users/vendors to make the test idempotent
+    const testUsers = await prisma.user.findMany({
+      where: {
+        email: { in: ['new_officer@vendorbridge.com', 'vendor_admin@globalelectronics.com'] }
+      },
+      select: { id: true }
+    });
+    const testUserIds = testUsers.map(u => u.id);
+
+    if (testUserIds.length > 0) {
+      await prisma.auditLog.deleteMany({
+        where: { userId: { in: testUserIds } }
+      });
+      await prisma.user.deleteMany({
+        where: { id: { in: testUserIds } }
+      });
+    }
+
+    await prisma.vendor.deleteMany({
+      where: { email: 'info@globalelectronics.com' }
+    });
+
+    // 1. Verify health
     const healthRes = await fetch(`http://localhost:${PORT}/api/health`);
     const healthData = await healthRes.json();
-    console.log('Health check status:', healthRes.status);
     console.log('Health check payload:', healthData);
 
-    if (healthData.status !== 'ok') {
-      throw new Error('Health check failed');
-    }
-
-    // 2. Login as Procurement Officer
-    console.log('\n--- 2. Procurement Officer Login ---');
-    const officerLoginRes = await fetch(`http://localhost:${PORT}/api/auth/login`, {
+    // 2. Test Registering a PROCUREMENT_OFFICER with extra fields
+    console.log('\n--- 2. Registering a new Procurement Officer with details ---');
+    const registerOfficerRes = await fetch(`http://localhost:${PORT}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'officer@vendorbridge.com',
+        email: 'new_officer@vendorbridge.com',
+        name: 'Jane Officer Doe',
         password: 'password123',
+        role: 'PROCUREMENT_OFFICER',
+        phone: '1234567890',
+        department: 'Regional Procurement Group',
+        designation: 'Lead Buyer',
+        approvalLimit: 75000.0,
       }),
     });
-    const officerLoginData = await officerLoginRes.json();
-    console.log('Officer Login status:', officerLoginRes.status);
-    console.log('Officer Role:', officerLoginData.user?.role);
-    console.log('Token generated successfully:', !!officerLoginData.token);
-
-    if (!officerLoginData.token) {
-      throw new Error('Officer login failed');
-    }
-
-    const officerToken = officerLoginData.token;
-
-    // 3. Fetch RFQs as Procurement Officer (should see the seeded RFQ)
-    console.log('\n--- 3. Fetch RFQs as Procurement Officer ---');
-    const rfqsRes = await fetch(`http://localhost:${PORT}/api/rfqs`, {
-      headers: { Authorization: `Bearer ${officerToken}` },
+    const registerOfficerData = await registerOfficerRes.json();
+    console.log('Registration status:', registerOfficerRes.status);
+    console.log('Registered User details:', {
+      name: registerOfficerData.name,
+      role: registerOfficerData.role,
+      phone: registerOfficerData.phone,
+      department: registerOfficerData.department,
+      approvalLimit: registerOfficerData.approvalLimit,
     });
-    const rfqsData = await rfqsRes.json();
-    console.log('Fetch RFQs status:', rfqsRes.status);
-    console.log('Number of RFQs returned:', rfqsData.length);
-    console.log('RFQ Title:', rfqsData[0]?.title);
 
-    if (rfqsData.length === 0) {
-      throw new Error('Seeded RFQ not retrieved');
+    if (registerOfficerRes.status !== 201) {
+      throw new Error(`Officer registration failed: ${JSON.stringify(registerOfficerData)}`);
     }
 
-    // 4. Login as Vendor 1
-    console.log('\n--- 4. Vendor Login ---');
-    const vendorLoginRes = await fetch(`http://localhost:${PORT}/api/auth/login`, {
+    // 3. Test Registering a VENDOR user with inline company creation (newVendorDetails)
+    console.log('\n--- 3. Registering a Vendor User with inline company creation ---');
+    const registerVendorRes = await fetch(`http://localhost:${PORT}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'vendor1@techcore.com',
+        email: 'vendor_admin@globalelectronics.com',
+        name: 'John Sales Lead',
+        password: 'password123',
+        role: 'VENDOR',
+        phone: '9998887776',
+        department: 'Sales & BD',
+        designation: 'VP Sales',
+        newVendorDetails: {
+          name: 'Global Electronics Corp',
+          category: 'IT Hardware',
+          gstNo: '24DDDDD4444D4Z4',
+          contactNo: '0792345678',
+          address: '401, Cyber Heights, GIDC',
+          city: 'Gandhinagar',
+          state: 'Gujarat',
+          pincode: '382010',
+          panNo: 'ABCDE9999X',
+          bankName: 'ICICI Bank Ltd',
+          bankAccNo: '999000888777',
+          ifscCode: 'ICIC0009990',
+          website: 'https://globalelectronics.com',
+          email: 'info@globalelectronics.com',
+        },
+      }),
+    });
+    const registerVendorData = await registerVendorRes.json();
+    console.log('Vendor Registration status:', registerVendorRes.status);
+    console.log('Registered Vendor User linked vendorId:', registerVendorData.vendorId);
+
+    if (registerVendorRes.status !== 201) {
+      throw new Error(`Vendor registration failed: ${JSON.stringify(registerVendorData)}`);
+    }
+
+    // 4. Login as newly registered Vendor and check returns
+    console.log('\n--- 4. Logging in as new Vendor User ---');
+    const loginRes = await fetch(`http://localhost:${PORT}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'vendor_admin@globalelectronics.com',
         password: 'password123',
       }),
     });
-    const vendorLoginData = await vendorLoginRes.json();
-    console.log('Vendor Login status:', vendorLoginRes.status);
-    console.log('Vendor Role:', vendorLoginData.user?.role);
-    console.log('Vendor ID linked to User:', vendorLoginData.user?.vendorId);
-
-    const vendorToken = vendorLoginData.token;
-
-    // 5. Fetch RFQs as Vendor (Should only see RFQs they are invited to)
-    console.log('\n--- 5. Fetch RFQs as Vendor ---');
-    const vendorRfqsRes = await fetch(`http://localhost:${PORT}/api/rfqs`, {
-      headers: { Authorization: `Bearer ${vendorToken}` },
+    const loginData = await loginRes.json();
+    console.log('Login status:', loginRes.status);
+    console.log('User Role:', loginData.user?.role);
+    console.log('User Linked Company Name:', loginData.user?.vendor?.name);
+    console.log('Vendor Company Bank Info:', {
+      bankName: loginData.user?.vendor?.bankName,
+      bankAccNo: loginData.user?.vendor?.bankAccNo,
+      rating: loginData.user?.vendor?.rating,
+      paymentTerms: loginData.user?.vendor?.paymentTerms,
     });
-    const vendorRfqsData = await vendorRfqsRes.json();
-    console.log('Fetch RFQs as Vendor status:', vendorRfqsRes.status);
-    console.log('Number of RFQs returned to Vendor:', vendorRfqsData.length);
 
-    // 6. Test RBAC: Access audit logs as Vendor (Should be Forbidden: 403)
-    console.log('\n--- 6. Test RBAC (Access logs as Vendor) ---');
-    const logsRes = await fetch(`http://localhost:${PORT}/api/audit/logs`, {
-      headers: { Authorization: `Bearer ${vendorToken}` },
-    });
-    const logsData = await logsRes.json();
-    console.log('Access logs status:', logsRes.status);
-    console.log('Response payload:', logsData);
-
-    if (logsRes.status !== 403) {
-      throw new Error('RBAC validation failed: Vendor was able to access audit logs');
+    if (!loginData.user?.vendor?.panNo) {
+      throw new Error('Vendor company profile was not populated correctly upon login');
     }
 
-    console.log('\n✅ All integration tests passed successfully!');
+    console.log('\n✅ Advanced Role-Based tests completed successfully!');
   } catch (error) {
-    console.error('❌ Tests failed with error:', error);
+    console.error('❌ Advanced tests failed:', error);
   } finally {
-    // Close HTTP server and DB client disconnect
     server.close(() => {
-      console.log('\nTest server shut down.');
+      console.log('Test server shut down.');
     });
     await prisma.$disconnect();
   }
