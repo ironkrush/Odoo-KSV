@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VendorBridge - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#bccabd",
+                        "status-purple": "#8A6CFF",
+                        "tertiary-fixed-dim": "#ffb3b6",
+                        "tertiary": "#a73644",
+                        "surface-bright": "#fbf9f4",
+                        "status-red": "#E66A6A",
+                        "outline": "#6d7a6f",
+                        "surface-dim": "#dbdad5",
+                        "surface-tint": "#006d3e",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f2f1ec",
+                        "on-error": "#ffffff",
+                        "surface-card": "#FFFFFF",
+                        "surface-container-high": "#eae8e3",
+                        "primary": "#006d3e",
+                        "secondary-fixed-dim": "#b7c4ff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#40000d",
+                        "primary-container": "#21b66f",
+                        "surface-variant": "#e4e2dd",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f5f3ee",
+                        "status-amber": "#F0B84C",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#004022",
+                        "surface-container-highest": "#e4e2dd",
+                        "on-surface": "#1b1c19",
+                        "surface-container": "#f0eee9",
+                        "on-primary-fixed": "#00210f",
+                        "surface": "#fbf9f4",
+                        "inverse-primary": "#57df93",
+                        "on-surface-variant": "#3d4a40",
+                        "on-primary-fixed-variant": "#00522e",
+                        "background": "#fbf9f4",
+                        "text-primary": "#233128",
+                        "secondary": "#2a50cd",
+                        "primary-fixed": "#76fcad",
+                        "on-background": "#1b1c19",
+                        "on-secondary-fixed-variant": "#0038b8",
+                        "on-tertiary-container": "#700920",
+                        "secondary-fixed": "#dde1ff",
+                        "secondary-container": "#486ae8",
+                        "border-main": "#E8E2DA",
+                        "on-secondary-fixed": "#001453",
+                        "inverse-surface": "#30312e",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#fffbff",
+                        "text-secondary": "#516058",
+                        "tint-green": "#E6F6ED",
+                        "tertiary-fixed": "#ffdada",
+                        "tertiary-container": "#fb7581",
+                        "primary-fixed-dim": "#57df93",
+                        "on-tertiary-fixed-variant": "#871d2e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "16px",
+                        "unit": "4px",
+                        "sidebar-width": "240px",
+                        "major": "48px",
+                        "loose": "32px",
+                        "container-padding": "24px",
+                        "comfortable": "24px",
+                        "tight": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "title-md": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "caption": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "title-md": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "caption": ["11px", { "lineHeight": "14px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #E8E2DA;
+            border-radius: 10px;
+        }
+        /* Material symbols setup */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-text-primary font-body-md min-h-screen flex">
+<!-- SideNavBar Component -->
+<nav class="hidden md:flex bg-surface-container-lowest dark:bg-surface-container-low border-r border-border-main dark:border-outline-variant flex flex-col h-screen w-[240px] fixed left-0 top-0 overflow-y-auto z-20">
+<div class="p-comfortable">
+<div class="flex items-center gap-tight">
+<span class="font-headline-lg text-headline-lg font-bold text-primary dark:text-primary-fixed-dim">VendorBridge</span>
+</div>
+<p class="font-caption text-caption text-text-secondary mt-1">Procurement Portal</p>
+</div>
+<div class="px-base mb-loose">
+<button class="w-full bg-primary-container text-on-primary rounded-lg py-2 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity font-title-md text-title-md h-[40px]">
+<span class="material-symbols-outlined icon-fill text-[18px]">add</span>
+                New Request
+            </button>
+</div>
+<div class="flex-1 overflow-y-auto px-base pb-comfortable flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-primary dark:text-primary-fixed-dim font-bold border-r-4 border-primary dark:border-primary-fixed-dim bg-tint-green dark:bg-on-primary-container/20" href="#">
+<span class="material-symbols-outlined icon-fill">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">storefront</span>
+                Vendors
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">request_quote</span>
+                RFQs
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+                Approvals
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+                Purchase Orders
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+                Invoices
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+                Activity Logs
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+                Reports
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+                Help Center
+            </a>
+</div>
+<div class="px-base py-comfortable border-t border-border-main flex flex-col gap-1 mt-auto">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">support_agent</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary dark:text-on-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- TopNavBar Component -->
+<header class="hidden md:flex bg-surface dark:bg-surface-dim border-b border-border-main dark:border-outline-variant shadow-sm fixed top-0 right-0 w-[calc(100%-240px)] h-16 items-center justify-between px-comfortable transition-all duration-200 ease-in-out z-10">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-[20px]">search</span>
+<input class="w-full h-[40px] pl-10 pr-4 rounded border border-border-main bg-surface-card focus:border-primary focus:ring-2 focus:ring-tint-green outline-none font-body-sm text-body-sm text-text-primary placeholder:text-text-secondary transition-all" placeholder="Search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-text-secondary hover:bg-surface-container hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-text-secondary hover:bg-surface-container hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-text-secondary hover:bg-surface-container hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+<div class="h-8 w-px bg-border-main"></div>
+<button class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+<img alt="User Profile Avatar" class="w-8 h-8 rounded-full border border-border-main object-cover" data-alt="A small, circular avatar portrait of a professional individual in a corporate setting, looking approachable and competent. The lighting is soft and natural, emphasizing a modern business aesthetic. The background is slightly out of focus, allowing the subject to stand out clearly. Warm tones enhance a sense of approachability consistent with a premium procurement portal design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5HWy0qRVSxNYvYlrB0WBacjIKTUohJEy2-ksPNMJk4wpLXWiH0V3hjXk-v3xmgefBy2g0wkugFBgwx9tN1o6RvpGQLas2Pfp5AYwI1faUMIDk5VenqjsDpQbw1Zfa50H4nZc6A-ldxmjSvpSmJ4-s2bxmPYjiYSi7BX17oI2zYarXY_a4dA2r9AMJPQLBss3b2lvf5tEEEP0fIXXTVmqiFhUmb7PracE8ZZ79gC4r3LvkCxQTMPzUFH1umOU0QBptZB8hIDvTK2k"/>
+<span class="material-symbols-outlined text-text-secondary">arrow_drop_down</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-[240px] pt-16 min-h-screen bg-background">
+<div class="p-comfortable md:p-loose max-w-[1600px] mx-auto flex flex-col gap-major">
+<!-- Top Section -->
+<section class="flex flex-col gap-comfortable">
+<div class="bg-surface-card rounded-xl border border-border-main p-comfortable shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex justify-between items-center bg-gradient-to-r from-surface-card to-tint-green/30 relative overflow-hidden">
+<div class="relative z-10">
+<h1 class="font-headline-xl text-headline-xl text-text-primary mb-1">Good Morning, Aman</h1>
+<p class="font-body-md text-body-md text-text-secondary">Overview of procurement operations.</p>
+</div>
+<div class="absolute right-0 top-0 h-full w-1/3 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at right, #21B66F 0%, transparent 70%);"></div>
+</div>
+<!-- KPI Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-comfortable">
+<div class="bg-surface-card rounded-lg border border-border-main p-comfortable shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-2 relative overflow-hidden group">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-text-secondary uppercase">Active RFQs</span>
+<div class="w-8 h-8 rounded-full bg-tint-green flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[18px]">request_quote</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mt-2">
+<span class="font-headline-xl text-headline-xl text-text-primary">24</span>
+<span class="font-caption text-caption text-primary flex items-center bg-tint-green px-2 py-0.5 rounded-full"><span class="material-symbols-outlined text-[12px] mr-0.5">trending_up</span>12%</span>
+</div>
+</div>
+<div class="bg-surface-card rounded-lg border border-border-main p-comfortable shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-2 relative overflow-hidden group">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-text-secondary uppercase">Pending Approvals</span>
+<div class="w-8 h-8 rounded-full bg-status-amber/20 flex items-center justify-center text-status-amber group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[18px]">fact_check</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mt-2">
+<span class="font-headline-xl text-headline-xl text-text-primary">12</span>
+<span class="font-caption text-caption text-text-secondary flex items-center">Needs action</span>
+</div>
+</div>
+<div class="bg-surface-card rounded-lg border border-border-main p-comfortable shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-2 relative overflow-hidden group">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-text-secondary uppercase">Monthly Spend</span>
+<div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mt-2">
+<span class="font-headline-xl text-headline-xl text-text-primary">$1.2M</span>
+<span class="font-caption text-caption text-status-red flex items-center bg-error-container/50 px-2 py-0.5 rounded-full"><span class="material-symbols-outlined text-[12px] mr-0.5">trending_down</span>3%</span>
+</div>
+</div>
+<div class="bg-surface-card rounded-lg border border-border-main p-comfortable shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col gap-2 relative overflow-hidden group">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-text-secondary uppercase">Open Invoices</span>
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mt-2">
+<span class="font-headline-xl text-headline-xl text-text-primary">45</span>
+<span class="font-caption text-caption text-text-secondary flex items-center">Totaling $450k</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Middle Section (Bento Grid) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-comfortable">
+<!-- Spend Overview Chart -->
+<div class="bg-surface-card rounded-xl border border-border-main shadow-[0_1px_3px_rgba(0,0,0,0.05)] lg:col-span-8 flex flex-col">
+<div class="p-comfortable border-b border-border-main flex justify-between items-center">
+<h2 class="font-title-md text-title-md text-text-primary">Spend Overview</h2>
+<select class="h-8 rounded border border-border-main bg-surface-card font-body-sm text-body-sm text-text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+<option>Last 6 Months</option>
+<option>Year to Date</option>
+</select>
+</div>
+<div class="p-comfortable flex-1 min-h-[300px] flex items-end gap-2">
+<!-- Placeholder for Chart -->
+<div class="w-full h-full flex items-end justify-between px-4">
+<div class="w-[8%] bg-border-main rounded-t-sm h-[30%] hover:bg-primary-container transition-colors relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-caption font-caption py-1 px-2 rounded">$120k</div></div>
+<div class="w-[8%] bg-border-main rounded-t-sm h-[45%] hover:bg-primary-container transition-colors relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-caption font-caption py-1 px-2 rounded">$180k</div></div>
+<div class="w-[8%] bg-border-main rounded-t-sm h-[60%] hover:bg-primary-container transition-colors relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-caption font-caption py-1 px-2 rounded">$240k</div></div>
+<div class="w-[8%] bg-border-main rounded-t-sm h-[40%] hover:bg-primary-container transition-colors relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-caption font-caption py-1 px-2 rounded">$160k</div></div>
+<div class="w-[8%] bg-primary-container rounded-t-sm h-[80%] hover:opacity-90 transition-opacity relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-caption font-caption py-1 px-2 rounded">$320k</div></div>
+<div class="w-[8%] bg-border-main rounded-t-sm h-[50%] hover:bg-primary-container transition-colors relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-caption font-caption py-1 px-2 rounded">$200k</div></div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-4 flex flex-col gap-comfortable">
+<!-- Quick Actions -->
+<div class="bg-surface-card rounded-xl border border-border-main shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-comfortable">
+<h2 class="font-title-md text-title-md text-text-primary mb-4">Quick Actions</h2>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-primary-container text-on-primary rounded-lg py-2 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity font-title-md text-title-md h-[40px]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                                Create RFQ
+                            </button>
+<button class="w-full bg-surface-card text-text-primary border border-border-main rounded-lg py-2 flex items-center justify-center gap-2 hover:bg-surface-container transition-colors font-title-md text-title-md h-[40px]">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+                                Add Vendor
+                            </button>
+<button class="w-full bg-surface-card text-text-primary border border-border-main rounded-lg py-2 flex items-center justify-center gap-2 hover:bg-surface-container transition-colors font-title-md text-title-md h-[40px]">
+<span class="material-symbols-outlined text-[18px]">description</span>
+                                Generate Report
+                            </button>
+</div>
+</div>
+<!-- Approval Pipeline -->
+<div class="bg-surface-card rounded-xl border border-border-main shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-comfortable flex-1">
+<div class="flex justify-between items-center mb-4">
+<h2 class="font-title-md text-title-md text-text-primary">Approval Pipeline</h2>
+<button class="text-primary hover:underline font-body-sm text-body-sm">View All</button>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-text-secondary">
+<span class="material-symbols-outlined">devices</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-text-primary font-medium">IT Equipment - Q3</p>
+<p class="font-caption text-caption text-text-secondary">Req: John Doe</p>
+</div>
+<span class="font-label-md text-label-md bg-status-amber/20 text-status-amber px-2 py-1 rounded-full">Pending</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-text-secondary">
+<span class="material-symbols-outlined">campaign</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-text-primary font-medium">Marketing Campaign</p>
+<p class="font-caption text-caption text-text-secondary">Req: Sarah Lee</p>
+</div>
+<span class="font-label-md text-label-md bg-status-amber/20 text-status-amber px-2 py-1 rounded-full">Pending</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Section -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-comfortable pb-loose">
+<!-- Recent Purchase Orders Table -->
+<div class="bg-surface-card rounded-xl border border-border-main shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col">
+<div class="p-comfortable border-b border-border-main flex justify-between items-center bg-[#FCFBF8]">
+<h2 class="font-title-md text-title-md text-text-primary">Recent Purchase Orders</h2>
+<button class="text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr>
+<th class="font-label-md text-label-md text-[#7D887F] uppercase px-comfortable py-3 border-b border-border-main bg-[#FCFBF8]">PO Number</th>
+<th class="font-label-md text-label-md text-[#7D887F] uppercase px-4 py-3 border-b border-border-main bg-[#FCFBF8]">Vendor</th>
+<th class="font-label-md text-label-md text-[#7D887F] uppercase px-4 py-3 border-b border-border-main bg-[#FCFBF8]">Amount</th>
+<th class="font-label-md text-label-md text-[#7D887F] uppercase px-comfortable py-3 border-b border-border-main bg-[#FCFBF8] text-right">Status</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-text-primary">
+<tr class="border-b border-[#F0EAE2] hover:bg-[#F2F7F4] transition-colors cursor-pointer">
+<td class="px-comfortable py-3 font-medium">PO-2023-089</td>
+<td class="px-4 py-3">Acme Corp</td>
+<td class="px-4 py-3">$12,450.00</td>
+<td class="px-comfortable py-3 text-right">
+<span class="inline-block px-2 py-1 rounded-full bg-tint-green text-primary font-label-md text-label-md">Approved</span>
+</td>
+</tr>
+<tr class="border-b border-[#F0EAE2] hover:bg-[#F2F7F4] transition-colors cursor-pointer">
+<td class="px-comfortable py-3 font-medium">PO-2023-088</td>
+<td class="px-4 py-3">TechSupplies Inc</td>
+<td class="px-4 py-3">$4,200.00</td>
+<td class="px-comfortable py-3 text-right">
+<span class="inline-block px-2 py-1 rounded-full bg-tint-green text-primary font-label-md text-label-md">Approved</span>
+</td>
+</tr>
+<tr class="border-b border-[#F0EAE2] hover:bg-[#F2F7F4] transition-colors cursor-pointer">
+<td class="px-comfortable py-3 font-medium">PO-2023-087</td>
+<td class="px-4 py-3">Global Logistics</td>
+<td class="px-4 py-3">$8,900.00</td>
+<td class="px-comfortable py-3 text-right">
+<span class="inline-block px-2 py-1 rounded-full bg-status-amber/20 text-status-amber font-label-md text-label-md">Processing</span>
+</td>
+</tr>
+<tr class="hover:bg-[#F2F7F4] transition-colors cursor-pointer">
+<td class="px-comfortable py-3 font-medium">PO-2023-086</td>
+<td class="px-4 py-3">Office Essentials</td>
+<td class="px-4 py-3">$1,150.00</td>
+<td class="px-comfortable py-3 text-right">
+<span class="inline-block px-2 py-1 rounded-full bg-tint-green text-primary font-label-md text-label-md">Approved</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Top Vendors Table -->
+<div class="bg-surface-card rounded-xl border border-border-main shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col">
+<div class="p-comfortable border-b border-border-main flex justify-between items-center bg-[#FCFBF8]">
+<h2 class="font-title-md text-title-md text-text-primary">Top Vendors</h2>
+<button class="text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr>
+<th class="font-label-md text-label-md text-[#7D887F] uppercase px-comfortable py-3 border-b border-border-main bg-[#FCFBF8]">Vendor Name</th>
+<th class="font-label-md text-label-md text-[#7D887F] uppercase px-4 py-3 border-b border-border-main bg-[#FCFBF8]">Category</th>
+<th class="font-label-md text-label-md text-[#7D887F] uppercase px-4 py-3 border-b border-border-main bg-[#FCFBF8]">YTD Spend</th>
+<th class="font-label-md text-label-md text-[#7D887F] uppercase px-comfortable py-3 border-b border-border-main bg-[#FCFBF8] text-right">Rating</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-text-primary">
+<tr class="border-b border-[#F0EAE2] hover:bg-[#F2F7F4] transition-colors cursor-pointer">
+<td class="px-comfortable py-3 font-medium flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-surface-container flex items-center justify-center text-caption text-text-secondary">A</div>
+                                        Acme Corp
+                                    </td>
+<td class="px-4 py-3">Hardware</td>
+<td class="px-4 py-3">$450k</td>
+<td class="px-comfortable py-3 text-right text-primary">
+<div class="flex items-center justify-end gap-1">
+<span class="material-symbols-outlined icon-fill text-[16px] text-status-amber">star</span>
+                                            4.9
+                                        </div>
+</td>
+</tr>
+<tr class="border-b border-[#F0EAE2] hover:bg-[#F2F7F4] transition-colors cursor-pointer">
+<td class="px-comfortable py-3 font-medium flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-surface-container flex items-center justify-center text-caption text-text-secondary">T</div>
+                                        TechSupplies Inc
+                                    </td>
+<td class="px-4 py-3">Software</td>
+<td class="px-4 py-3">$320k</td>
+<td class="px-comfortable py-3 text-right text-primary">
+<div class="flex items-center justify-end gap-1">
+<span class="material-symbols-outlined icon-fill text-[16px] text-status-amber">star</span>
+                                            4.7
+                                        </div>
+</td>
+</tr>
+<tr class="border-b border-[#F0EAE2] hover:bg-[#F2F7F4] transition-colors cursor-pointer">
+<td class="px-comfortable py-3 font-medium flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-surface-container flex items-center justify-center text-caption text-text-secondary">G</div>
+                                        Global Logistics
+                                    </td>
+<td class="px-4 py-3">Shipping</td>
+<td class="px-4 py-3">$280k</td>
+<td class="px-comfortable py-3 text-right text-primary">
+<div class="flex items-center justify-end gap-1">
+<span class="material-symbols-outlined icon-fill text-[16px] text-status-amber">star</span>
+                                            4.5
+                                        </div>
+</td>
+</tr>
+<tr class="hover:bg-[#F2F7F4] transition-colors cursor-pointer">
+<td class="px-comfortable py-3 font-medium flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-surface-container flex items-center justify-center text-caption text-text-secondary">O</div>
+                                        Office Essentials
+                                    </td>
+<td class="px-4 py-3">Supplies</td>
+<td class="px-4 py-3">$150k</td>
+<td class="px-comfortable py-3 text-right text-primary">
+<div class="flex items-center justify-end gap-1">
+<span class="material-symbols-outlined icon-fill text-[16px] text-status-amber">star</span>
+                                            4.8
+                                        </div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

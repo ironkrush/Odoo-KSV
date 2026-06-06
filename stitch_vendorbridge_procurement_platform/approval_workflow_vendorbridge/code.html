@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VendorBridge - Approvals</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-card": "#FFFFFF",
+                      "on-error-container": "#93000a",
+                      "inverse-on-surface": "#f2f1ec",
+                      "secondary": "#2a50cd",
+                      "on-primary-fixed": "#00210f",
+                      "background": "#fbf9f4",
+                      "surface-container": "#f0eee9",
+                      "primary-container": "#21b66f",
+                      "outline-variant": "#bccabd",
+                      "on-tertiary-fixed": "#40000d",
+                      "on-tertiary": "#ffffff",
+                      "primary": "#006d3e",
+                      "on-secondary-container": "#fffbff",
+                      "tertiary-container": "#fb7581",
+                      "status-red": "#E66A6A",
+                      "tertiary-fixed": "#ffdada",
+                      "surface-container-lowest": "#ffffff",
+                      "surface": "#fbf9f4",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#1b1c19",
+                      "surface-container-low": "#f5f3ee",
+                      "on-background": "#1b1c19",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#e4e2dd",
+                      "status-amber": "#F0B84C",
+                      "error-container": "#ffdad6",
+                      "primary-fixed": "#76fcad",
+                      "text-secondary": "#516058",
+                      "on-secondary-fixed-variant": "#0038b8",
+                      "secondary-container": "#486ae8",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed-variant": "#00522e",
+                      "surface-variant": "#e4e2dd",
+                      "tertiary-fixed-dim": "#ffb3b6",
+                      "inverse-primary": "#57df93",
+                      "text-primary": "#233128",
+                      "on-secondary-fixed": "#001453",
+                      "outline": "#6d7a6f",
+                      "inverse-surface": "#30312e",
+                      "surface-bright": "#fbf9f4",
+                      "on-error": "#ffffff",
+                      "surface-tint": "#006d3e",
+                      "primary-fixed-dim": "#57df93",
+                      "status-purple": "#8A6CFF",
+                      "secondary-fixed-dim": "#b7c4ff",
+                      "surface-container-high": "#eae8e3",
+                      "on-tertiary-container": "#700920",
+                      "border-main": "#E8E2DA",
+                      "on-tertiary-fixed-variant": "#871d2e",
+                      "surface-dim": "#dbdad5",
+                      "secondary-fixed": "#dde1ff",
+                      "on-primary-container": "#004022",
+                      "tertiary": "#a73644",
+                      "tint-green": "#E6F6ED",
+                      "on-surface-variant": "#3d4a40"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sidebar-width": "240px",
+                      "major": "48px",
+                      "comfortable": "24px",
+                      "loose": "32px",
+                      "container-padding": "24px",
+                      "base": "16px",
+                      "unit": "4px",
+                      "tight": "8px"
+              },
+              "fontFamily": {
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "title-md": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "22px",
+                              {
+                                      "lineHeight": "28px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-xl": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "caption": [
+                              "11px",
+                              {
+                                      "lineHeight": "14px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body { background-color: #fbf9f4; color: #1b1c19; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined[data-weight="fill"] { font-variation-settings: 'FILL' 1; }
+        
+        /* Level 1 Card Shadow */
+        .card-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="font-body-md text-body-md bg-background antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="fixed top-0 right-0 w-full md:w-[calc(100%-240px)] h-16 bg-surface z-40 border-b border-border-main flex items-center justify-between px-comfortable shadow-sm transition-all duration-200 ease-in-out">
+<div class="flex items-center">
+<!-- Search placeholder if needed -->
+<span class="font-headline-lg text-headline-lg font-bold text-primary md:hidden ml-4">VendorBridge</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-text-secondary hover:text-primary transition-colors cursor-pointer w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-text-secondary hover:text-primary transition-colors cursor-pointer w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+</button>
+<button class="text-text-secondary hover:text-primary transition-colors cursor-pointer w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden border border-border-main ml-2 cursor-pointer">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="Professional headshot of a smiling young man with short brown hair, wearing a dark blue button-down shirt. Clean, well-lit corporate style portrait against a neutral blurred background. Modern enterprise software avatar style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgfRtcaqKhUaj-gcnIoccMrT8Ca9oTk6zOqd-_0QNISQJePM74OOidjoW-YxWwxlD1tzL9AdmtPj-d-9fYc2j3myom_jPY2HHGjKak7Dk7yAjZxxQm8xWRhyJ15KqGsnoQxEMM3SyueD_vOadaDkP8v0KaKtMRZgowTC37yczBxLeutYZESjZX_FBUz28TeKjwnH2LdqysM5k5DXhnPXKJFijVPG2-sDdU3nBpCsSHCF_zb396uEpyykPAQDDG9qX2sy8O9fnxFqU"/>
+</div>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-[240px] bg-surface-container-lowest border-r border-border-main z-50 flex flex-col hidden md:flex">
+<div class="p-comfortable flex flex-col items-start border-b border-border-main">
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary">VendorBridge</h1>
+<p class="font-caption text-caption text-text-secondary mt-1">Procurement Portal</p>
+</div>
+<div class="p-4">
+<button class="w-full bg-primary-container text-white font-title-md text-title-md py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-primary transition-colors duration-200 shadow-sm">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                New Request
+            </button>
+</div>
+<nav class="flex-1 overflow-y-auto py-2">
+<ul class="flex flex-col gap-1 px-2">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="storefront">storefront</span>
+<span>Vendors</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="request_quote">request_quote</span>
+<span>RFQs</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-primary font-bold bg-tint-green border-r-4 border-primary transition-opacity opacity-90" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="fact_check" data-weight="fill">fact_check</span>
+<span>Approvals</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="shopping_cart">shopping_cart</span>
+<span>Purchase Orders</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="receipt_long">receipt_long</span>
+<span>Invoices</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="history">history</span>
+<span>Activity Logs</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="analytics">analytics</span>
+<span>Reports</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</li>
+</ul>
+</nav>
+<div class="mt-auto border-t border-border-main p-2">
+<ul class="flex flex-col gap-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="support_agent">support_agent</span>
+<span>Support</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="logout">logout</span>
+<span>Sign Out</span>
+</a>
+</li>
+</ul>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-[240px] pt-16 min-h-screen">
+<div class="p-base md:p-comfortable max-w-7xl mx-auto space-y-loose">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div>
+<div class="flex items-center gap-2 text-text-secondary font-body-sm text-body-sm mb-1">
+<a class="hover:text-primary transition-colors" href="#">Approvals</a>
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+<span>RFQ-2023-089</span>
+</div>
+<h2 class="font-headline-xl text-headline-xl text-on-surface">Hardware Procurement - Q3</h2>
+</div>
+<div class="flex gap-3 w-full sm:w-auto">
+<button class="flex-1 sm:flex-none px-4 py-2 bg-surface-card border border-border-main text-text-primary rounded-lg font-title-md text-title-md hover:bg-surface-container transition-colors">
+                        Request Changes
+                    </button>
+<button class="flex-1 sm:flex-none px-4 py-2 bg-status-red text-white rounded-lg font-title-md text-title-md hover:opacity-90 transition-opacity">
+                        Reject
+                    </button>
+<button class="flex-1 sm:flex-none px-4 py-2 bg-primary-container text-white rounded-lg font-title-md text-title-md hover:bg-primary transition-colors">
+                        Approve
+                    </button>
+</div>
+</div>
+<!-- Progress Workflow -->
+<section class="bg-surface-card rounded-xl border border-border-main p-comfortable card-shadow">
+<div class="relative flex items-center justify-between w-full">
+<!-- Connecting Lines -->
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-surface-container -z-10 rounded-full"></div>
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1/2 h-1 bg-primary-container -z-10 rounded-full"></div>
+<!-- Step 1: Submitted -->
+<div class="flex flex-col items-center gap-2 bg-surface-card px-2">
+<div class="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
+</div>
+<span class="font-label-md text-label-md text-text-primary">Submitted</span>
+</div>
+<!-- Step 2: L1 Review -->
+<div class="flex flex-col items-center gap-2 bg-surface-card px-2">
+<div class="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
+</div>
+<span class="font-label-md text-label-md text-text-primary">L1 Review</span>
+</div>
+<!-- Step 3: L2 Review (Current) -->
+<div class="flex flex-col items-center gap-2 bg-surface-card px-2">
+<div class="w-8 h-8 rounded-full bg-surface-card border-2 border-primary-container text-primary-container flex items-center justify-center shadow-sm ring-4 ring-tint-green">
+<span class="font-title-md text-title-md">3</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-bold">L2 Review</span>
+</div>
+<!-- Step 4: Approved -->
+<div class="flex flex-col items-center gap-2 bg-surface-card px-2">
+<div class="w-8 h-8 rounded-full bg-surface-container text-text-secondary flex items-center justify-center">
+<span class="font-title-md text-title-md">4</span>
+</div>
+<span class="font-label-md text-label-md text-text-secondary">Approved</span>
+</div>
+</div>
+</section>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-comfortable">
+<!-- Left Column: Approval Chain & Comments -->
+<div class="lg:col-span-2 space-y-comfortable">
+<!-- Approval Chain -->
+<section class="bg-surface-card rounded-xl border border-border-main p-comfortable card-shadow">
+<h3 class="font-title-md text-title-md text-on-surface mb-loose border-b border-border-main pb-4">Approval Chain</h3>
+<div class="space-y-6">
+<!-- Approver 1 -->
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-border-main flex-shrink-0">
+<img alt="Sarah Jenkins" class="w-full h-full object-cover" data-alt="Professional headshot of a mature woman with glasses, smiling softly. She is wearing a light blazer. Corporate environment background. Soft, natural lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUhi4HYJqVLW2cbY4wkSBuJuuAIKeJ0DJLsbDzMzhOhhop171C33orGk6OM-3chIqueg7ntoUYaEuiolE1cCw2PNuhnmI2deraEWaE1294WxtGImLXwfbr4ymZYuxwgymQwZRlgRydM9__zkcxNlbaECbdrGLHcUy3GxTKdroWu-d2Fbf8381SZd39OE_kBo_zJfxv62FmQ5EDiefo4LcCpQwT6mLClWVdDfW2xw1AHgL3NlPIxRNos0vgnFZbP_Hotox3xFxOn5w"/>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<div>
+<p class="font-title-md text-title-md text-text-primary">Sarah Jenkins</p>
+<p class="font-body-sm text-body-sm text-text-secondary">Procurement Manager</p>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-md text-label-md bg-tint-green text-primary-container">
+                                            Approved
+                                        </span>
+</div>
+<div class="mt-2 p-3 bg-surface rounded-lg border border-border-main text-text-secondary font-body-sm text-body-sm">
+                                        "Vendor terms align with our Q3 guidelines. Pricing is within budget constraints."
+                                        <div class="mt-1 font-caption text-caption text-outline">Oct 12, 10:30 AM</div>
+</div>
+</div>
+</div>
+<!-- Approver 2 (Pending) -->
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container flex-shrink-0">
+<img alt="Michael Chen" class="w-full h-full object-cover" data-alt="Professional headshot of a smiling young man with short brown hair, wearing a dark blue button-down shirt. Clean, well-lit corporate style portrait against a neutral blurred background. Modern enterprise software avatar style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMZJwVIjhduKauxftvAeqT2FqFfN8WdIE7eBBFdRXuglFtgaFscRZoP1-BhILhzXnDuHzgToTlBH0t1ZQcsGWt7KOsYhu_b0YB--bdV3ZQ59_mi70yzHxIaNBGVhou7t5M5ME2k4PFO42IhxoKMkTG_CHOM-Q-2rxs8IffL5XKxJbN8NEWG5_us_toj3IUzVJ-8RiMmdr4rVvDVcdC60ySGadqioy9jppgoDjiftTAAqeFOenBVYA21ABxPecvTP4OcukaqxADRRg"/>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<div>
+<p class="font-title-md text-title-md text-text-primary">Michael Chen (You)</p>
+<p class="font-body-sm text-body-sm text-text-secondary">Director of IT</p>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-md text-label-md bg-surface-container text-text-secondary border border-border-main">
+                                            Pending Review
+                                        </span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Comments Section -->
+<section class="bg-surface-card rounded-xl border border-border-main p-comfortable card-shadow">
+<h3 class="font-title-md text-title-md text-on-surface mb-4">Discussion</h3>
+<div class="space-y-4 mb-6">
+<!-- Comment -->
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 text-text-secondary font-title-md text-title-md">
+                                    SJ
+                                </div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="font-title-md text-title-md text-text-primary text-sm">Sarah Jenkins</span>
+<span class="font-caption text-caption text-text-secondary">2 hours ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">
+                                        @Michael, please verify if the specs for item #2 meet the new infosec requirements before final approval.
+                                    </p>
+</div>
+</div>
+</div>
+<!-- Input -->
+<div class="flex gap-3 items-start">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-border-main flex-shrink-0">
+<img alt="Michael Chen" class="w-full h-full object-cover" data-alt="Professional headshot of a smiling young man with short brown hair, wearing a dark blue button-down shirt. Clean, well-lit corporate style portrait against a neutral blurred background. Modern enterprise software avatar style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAa2Xt8p63wwc613qMC8hatGEZOepPuJVjSh7k9O0zMteBYXepIPDacjBYL16vpTZr1vrJNykk-Pmw-08PqGHMf9xwl5c0SA67fIK3a2PEl5-NyI4PK9sN_qZSNtQxAM6KarwrIRyDqnNhVTaB5k7t1sdsfTQkxH-SgHVFA1I8C79oHcm8uCIU465jzcUHk0b4hZvz_2Omtd0oAPe4hsz61UuUHEXhm6hqAhbVEnjw5dEyETUHPnW99mj9D7w-IBguVkAI_crli81w"/>
+</div>
+<div class="flex-1">
+<textarea class="w-full h-20 px-3 py-2 bg-surface border border-border-main rounded-lg focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-tint-green font-body-sm text-body-sm text-text-primary resize-none placeholder:text-outline" placeholder="Add a comment or note..."></textarea>
+<div class="flex justify-end mt-2">
+<button class="px-4 py-2 bg-surface-card border border-border-main text-text-primary rounded-lg font-title-md text-title-md hover:bg-surface-container transition-colors text-sm">
+                                        Post Comment
+                                    </button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Quotation Summary -->
+<div class="lg:col-span-1 space-y-comfortable">
+<section class="bg-surface-card rounded-xl border border-border-main overflow-hidden card-shadow sticky top-20">
+<div class="p-comfortable border-b border-border-main bg-surface">
+<h3 class="font-title-md text-title-md text-on-surface">Quotation Summary</h3>
+<p class="font-body-sm text-body-sm text-text-secondary mt-1">Vendor: TechSolutions Inc.</p>
+</div>
+<div class="p-comfortable">
+<!-- Line Items (simplified for summary) -->
+<div class="space-y-4 mb-6">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-body-sm text-body-sm text-text-primary font-medium">Dell Latitude 7420</p>
+<p class="font-caption text-caption text-text-secondary">Qty: 15 × $1,250.00</p>
+</div>
+<span class="font-body-sm text-body-sm text-text-primary">$18,750.00</span>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="font-body-sm text-body-sm text-text-primary font-medium">ThinkPad Docking Station</p>
+<p class="font-caption text-caption text-text-secondary">Qty: 15 × $185.00</p>
+</div>
+<span class="font-body-sm text-body-sm text-text-primary">$2,775.00</span>
+</div>
+</div>
+<div class="border-t border-border-main pt-4 space-y-2">
+<div class="flex justify-between font-body-sm text-body-sm text-text-secondary">
+<span>Subtotal</span>
+<span>$21,525.00</span>
+</div>
+<div class="flex justify-between font-body-sm text-body-sm text-text-secondary">
+<span>Tax (8%)</span>
+<span>$1,722.00</span>
+</div>
+<div class="flex justify-between font-title-md text-title-md text-on-surface pt-2">
+<span>Total Value</span>
+<span>$23,247.00</span>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-border-main">
+<h4 class="font-label-md text-label-md text-outline uppercase tracking-wider mb-3">Terms &amp; Conditions</h4>
+<ul class="space-y-2 font-body-sm text-body-sm text-text-secondary">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="payments">payments</span>
+                                        Net 30 Days
+                                    </li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="local_shipping">local_shipping</span>
+                                        FOB Destination
+                                    </li>
+</ul>
+</div>
+<div class="mt-6">
+<button class="w-full px-4 py-2 bg-surface border border-border-main text-primary rounded-lg font-title-md text-title-md hover:bg-tint-green transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="description">description</span>
+                                    View Full PDF
+                                </button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+</body></html>

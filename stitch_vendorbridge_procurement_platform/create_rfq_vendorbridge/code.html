@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VendorBridge - Create RFQ</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-card": "#FFFFFF",
+                    "on-error-container": "#93000a",
+                    "inverse-on-surface": "#f2f1ec",
+                    "secondary": "#2a50cd",
+                    "on-primary-fixed": "#00210f",
+                    "background": "#fbf9f4",
+                    "surface-container": "#f0eee9",
+                    "primary-container": "#21b66f",
+                    "outline-variant": "#bccabd",
+                    "on-tertiary-fixed": "#40000d",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#006d3e",
+                    "on-secondary-container": "#fffbff",
+                    "tertiary-container": "#fb7581",
+                    "status-red": "#E66A6A",
+                    "tertiary-fixed": "#ffdada",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#fbf9f4",
+                    "on-secondary": "#ffffff",
+                    "on-surface": "#1b1c19",
+                    "surface-container-low": "#f5f3ee",
+                    "on-background": "#1b1c19",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#e4e2dd",
+                    "status-amber": "#F0B84C",
+                    "error-container": "#ffdad6",
+                    "primary-fixed": "#76fcad",
+                    "text-secondary": "#516058",
+                    "on-secondary-fixed-variant": "#0038b8",
+                    "secondary-container": "#486ae8",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed-variant": "#00522e",
+                    "surface-variant": "#e4e2dd",
+                    "tertiary-fixed-dim": "#ffb3b6",
+                    "inverse-primary": "#57df93",
+                    "text-primary": "#233128",
+                    "on-secondary-fixed": "#001453",
+                    "outline": "#6d7a6f",
+                    "inverse-surface": "#30312e",
+                    "surface-bright": "#fbf9f4",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#006d3e",
+                    "primary-fixed-dim": "#57df93",
+                    "status-purple": "#8A6CFF",
+                    "secondary-fixed-dim": "#b7c4ff",
+                    "surface-container-high": "#eae8e3",
+                    "on-tertiary-container": "#700920",
+                    "border-main": "#E8E2DA",
+                    "on-tertiary-fixed-variant": "#871d2e",
+                    "surface-dim": "#dbdad5",
+                    "secondary-fixed": "#dde1ff",
+                    "on-primary-container": "#004022",
+                    "tertiary": "#a73644",
+                    "tint-green": "#E6F6ED",
+                    "on-surface-variant": "#3d4a40"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width": "240px",
+                    "major": "48px",
+                    "comfortable": "24px",
+                    "loose": "32px",
+                    "container-padding": "24px",
+                    "base": "16px",
+                    "unit": "4px",
+                    "tight": "8px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter", "sans-serif"],
+                    "headline-lg": ["Inter", "sans-serif"],
+                    "title-md": ["Inter", "sans-serif"],
+                    "headline-xl": ["Inter", "sans-serif"],
+                    "body-md": ["Inter", "sans-serif"],
+                    "caption": ["Inter", "sans-serif"],
+                    "body-sm": ["Inter", "sans-serif"]
+            },
+            "fontSize": {
+                    "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                    "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                    "title-md": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                    "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                    "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "caption": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+                    "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Form Input Focus Ring Override */
+        input:focus, textarea:focus, select:focus {
+            outline: none !important;
+            border-color: #21B66F !important;
+            box-shadow: 0 0 0 2px rgba(33, 182, 111, 0.2) !important;
+        }
+        
+        /* Subtle elevation for cards */
+        .card-shadow {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .modal-shadow {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-text-primary antialiased">
+<!-- TopNavBar -->
+<nav class="bg-surface fixed top-0 right-0 w-[calc(100%-240px)] h-16 border-b border-border-main shadow-sm flex items-center justify-between px-comfortable z-20 transition-all duration-200 ease-in-out">
+<div class="flex items-center gap-4">
+<!-- Breadcrumbs / Page Context -->
+<div class="flex items-center gap-2 text-text-secondary font-body-sm">
+<span>RFQs</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-primary font-medium">New Request</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<button aria-label="notifications" class="text-text-secondary hover:text-primary transition-all duration-200 ease-in-out cursor-pointer relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-status-red rounded-full"></span>
+</button>
+<button aria-label="chat_bubble" class="text-text-secondary hover:text-primary transition-all duration-200 ease-in-out cursor-pointer">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+</button>
+<button aria-label="help" class="text-text-secondary hover:text-primary transition-all duration-200 ease-in-out cursor-pointer">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+</div>
+<div class="h-8 w-px bg-border-main"></div>
+<button class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-border-main">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate user, smiling slightly, well-lit against a neutral grey background, representing the logged-in user profile image." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEiNCmToef9hsvQwIdNTPH1luwHcMTEqesZdMeSC7uLPBuNFR_KsTwKFa9Qk2muJhhRJgKBCilydlj1kOtKJrUZsntd8tQPYku6EqyjRXYXJAsGrKMh4pDhmj20fLmbX_xvhFaYpR4i0kX0Tii-uI3Z79jvLx3BGmo8m4ltn4b7c-obVL7RW1jcnbQaHhO-CQTNZXL0HA9EjqOMkYilom0cQqLZJ9Y6jzWZBqu71IhWxsI82Aw8DMHhyuH_-lQmlUt9JxFrA02fbQ"/>
+</div>
+</button>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="bg-surface-container-lowest fixed left-0 top-0 h-screen w-[240px] border-r border-border-main flex flex-col h-full overflow-y-auto z-30">
+<!-- Brand Header -->
+<div class="p-comfortable flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined font-bold text-[20px]" data-weight="fill">badge</span>
+</div>
+<div>
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary">VendorBridge</h1>
+<p class="font-caption text-caption text-text-secondary">Procurement Portal</p>
+</div>
+</div>
+<!-- CTA -->
+<div class="px-4 py-2 mb-4">
+<button class="w-full bg-primary-container text-on-primary font-title-md text-title-md py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                New Request
+            </button>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+                Vendors
+            </a>
+<!-- Active Tab: RFQs -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-primary font-bold border-r-4 border-primary bg-tint-green font-body-md text-body-md opacity-90 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="request_quote" data-weight="fill" style="font-variation-settings: 'FILL' 1;">request_quote</span>
+                RFQs
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+                Approvals
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+                Purchase Orders
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+                Invoices
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                Activity Logs
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                Reports
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Help Center
+            </a>
+</nav>
+<!-- Footer Links -->
+<div class="p-4 border-t border-border-main space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="support_agent">support_agent</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-secondary hover:bg-surface-container transition-colors duration-200 font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="logout">logout</span>
+                Sign Out
+            </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[240px] pt-16 min-h-screen pb-major">
+<!-- Header & Stepper Container -->
+<div class="bg-surface-card border-b border-border-main px-comfortable py-loose">
+<div class="max-w-5xl mx-auto">
+<h2 class="font-headline-xl text-headline-xl text-text-primary mb-8">Create Request for Quotation</h2>
+<!-- Modern Stepper -->
+<div class="relative flex items-center justify-between w-full">
+<!-- Line behind steps -->
+<div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-[2px] bg-border-main z-0"></div>
+<!-- Active Progress Line -->
+<div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-1/3 h-[2px] bg-primary z-0 transition-all duration-500"></div>
+<!-- Step 1: Active -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-surface-card px-2">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-sm border-2 border-surface-card">
+<span class="font-title-md text-body-sm">1</span>
+</div>
+<span class="font-title-md text-body-sm text-primary">Basic Information</span>
+</div>
+<!-- Step 2: Inactive/Upcoming -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-surface-card px-2">
+<div class="w-8 h-8 rounded-full bg-surface border-2 border-border-main flex items-center justify-center text-text-secondary">
+<span class="font-title-md text-body-sm">2</span>
+</div>
+<span class="font-body-md text-body-sm text-text-secondary">Line Items</span>
+</div>
+<!-- Step 3: Inactive/Upcoming -->
+<div class="relative z-10 flex flex-col items-center gap-2 bg-surface-card px-2">
+<div class="w-8 h-8 rounded-full bg-surface border-2 border-border-main flex items-center justify-center text-text-secondary">
+<span class="font-title-md text-body-sm">3</span>
+</div>
+<span class="font-body-md text-body-sm text-text-secondary">Vendors &amp; Attachments</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Form Canvas -->
+<div class="p-comfortable max-w-5xl mx-auto space-y-loose mt-4">
+<!-- Step 1: Basic Information -->
+<section class="bg-surface-card rounded-xl border border-border-main card-shadow p-comfortable relative overflow-hidden">
+<!-- Decorative subtle accent line -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-container to-tint-green"></div>
+<h3 class="font-headline-lg text-title-md text-text-primary mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">info</span>
+                    Basic Information
+                </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Title (Full Width) -->
+<div class="col-span-1 md:col-span-2">
+<label class="block font-label-md text-label-md text-text-secondary mb-2 uppercase" for="rfq-title">RFQ Title <span class="text-error">*</span></label>
+<input class="w-full h-10 px-3 border border-border-main rounded-lg bg-surface text-text-primary font-body-md placeholder:text-outline-variant transition-colors" id="rfq-title" placeholder="e.g., Q3 Office Hardware Refresh" type="text"/>
+</div>
+<!-- Category -->
+<div>
+<label class="block font-label-md text-label-md text-text-secondary mb-2 uppercase" for="rfq-category">Category <span class="text-error">*</span></label>
+<div class="relative">
+<select class="w-full h-10 pl-3 pr-10 border border-border-main rounded-lg bg-surface text-text-primary font-body-md appearance-none transition-colors" id="rfq-category">
+<option disabled="" selected="" value="">Select category...</option>
+<option value="hardware">IT Hardware</option>
+<option value="software">Software Licenses</option>
+<option value="services">Professional Services</option>
+<option value="facilities">Facilities &amp; Maintenance</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Deadline -->
+<div>
+<label class="block font-label-md text-label-md text-text-secondary mb-2 uppercase" for="rfq-deadline">Submission Deadline <span class="text-error">*</span></label>
+<div class="relative">
+<input class="w-full h-10 px-3 border border-border-main rounded-lg bg-surface text-text-primary font-body-md transition-colors" id="rfq-deadline" type="date"/>
+</div>
+</div>
+<!-- Description (Full Width) -->
+<div class="col-span-1 md:col-span-2">
+<label class="block font-label-md text-label-md text-text-secondary mb-2 uppercase" for="rfq-description">Description</label>
+<textarea class="w-full p-3 border border-border-main rounded-lg bg-surface text-text-primary font-body-md placeholder:text-outline-variant transition-colors resize-y" id="rfq-description" placeholder="Provide a brief overview of the requirements..." rows="4"></textarea>
+</div>
+</div>
+</section>
+<!-- Step 2: Line Items -->
+<section class="bg-surface-card rounded-xl border border-border-main card-shadow p-comfortable relative">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-lg text-title-md text-text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">list_alt</span>
+                        Line Items
+                    </h3>
+<button class="flex items-center gap-2 bg-tint-green text-primary px-3 py-1.5 rounded-lg hover:bg-[#D4EEDF] transition-colors font-title-md text-body-sm border border-transparent">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Add Item
+                    </button>
+</div>
+<div class="overflow-x-auto border border-border-main rounded-lg bg-surface">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#FCFBF8] border-b border-border-main">
+<th class="py-3 px-4 font-label-md text-label-md text-text-secondary uppercase w-2/5">Item Description</th>
+<th class="py-3 px-4 font-label-md text-label-md text-text-secondary uppercase w-1/6">Quantity</th>
+<th class="py-3 px-4 font-label-md text-label-md text-text-secondary uppercase w-1/6">Unit</th>
+<th class="py-3 px-4 font-label-md text-label-md text-text-secondary uppercase">Notes</th>
+<th class="py-3 px-4 font-label-md text-label-md text-text-secondary uppercase text-center w-12"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#F0EAE2] bg-surface-card">
+<!-- Row 1 -->
+<tr class="hover:bg-[#F2F7F4] transition-colors group">
+<td class="py-2 px-4">
+<input class="w-full h-8 px-2 border border-transparent hover:border-border-main focus:border-primary rounded bg-transparent focus:bg-surface-card font-body-md text-text-primary" type="text" value="ThinkPad T14s Gen 3"/>
+</td>
+<td class="py-2 px-4">
+<input class="w-full h-8 px-2 border border-transparent hover:border-border-main focus:border-primary rounded bg-transparent focus:bg-surface-card font-body-md text-text-primary" type="number" value="15"/>
+</td>
+<td class="py-2 px-4">
+<select class="w-full h-8 px-2 border border-transparent hover:border-border-main focus:border-primary rounded bg-transparent focus:bg-surface-card font-body-md text-text-primary appearance-none">
+<option selected="" value="ea">Each</option>
+<option value="box">Box</option>
+<option value="hr">Hour</option>
+</select>
+</td>
+<td class="py-2 px-4">
+<input class="w-full h-8 px-2 border border-transparent hover:border-border-main focus:border-primary rounded bg-transparent focus:bg-surface-card font-body-md text-text-primary" type="text" value="Min 16GB RAM, 512GB SSD"/>
+</td>
+<td class="py-2 px-4 text-center">
+<button class="text-outline hover:text-status-red transition-colors opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-error-container/50">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-[#F2F7F4] transition-colors group">
+<td class="py-2 px-4">
+<input class="w-full h-8 px-2 border border-transparent hover:border-border-main focus:border-primary rounded bg-transparent focus:bg-surface-card font-body-md text-text-primary" type="text" value="Dell UltraSharp 27 Monitor"/>
+</td>
+<td class="py-2 px-4">
+<input class="w-full h-8 px-2 border border-transparent hover:border-border-main focus:border-primary rounded bg-transparent focus:bg-surface-card font-body-md text-text-primary" type="number" value="30"/>
+</td>
+<td class="py-2 px-4">
+<select class="w-full h-8 px-2 border border-transparent hover:border-border-main focus:border-primary rounded bg-transparent focus:bg-surface-card font-body-md text-text-primary appearance-none">
+<option selected="" value="ea">Each</option>
+<option value="box">Box</option>
+</select>
+</td>
+<td class="py-2 px-4">
+<input class="w-full h-8 px-2 border border-transparent hover:border-border-main focus:border-primary rounded bg-transparent focus:bg-surface-card font-body-md text-text-primary placeholder:text-outline-variant" placeholder="Add notes..." type="text"/>
+</td>
+<td class="py-2 px-4 text-center">
+<button class="text-outline hover:text-status-red transition-colors opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-error-container/50">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</td>
+</tr>
+<!-- Empty Row for new entry feel -->
+<tr class="bg-surface hover:bg-[#F2F7F4] transition-colors border-t-2 border-dashed border-border-main">
+<td class="py-2 px-4">
+<input class="w-full h-8 px-2 border-none bg-transparent focus:bg-surface-card focus:border focus:border-primary rounded font-body-md text-text-primary" placeholder="Enter item..." type="text"/>
+</td>
+<td class="py-2 px-4 text-text-secondary font-body-sm italic" colspan="4">
+                                    Start typing to add new line item...
+                                </td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Step 3: Vendors & Attachments -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Vendor Selection -->
+<section class="bg-surface-card rounded-xl border border-border-main card-shadow p-comfortable flex flex-col">
+<h3 class="font-headline-lg text-title-md text-text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">storefront</span>
+                        Select Vendors
+                    </h3>
+<div class="relative mb-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full h-10 pl-10 pr-3 border border-border-main rounded-lg bg-surface text-text-primary font-body-md placeholder:text-outline-variant focus:border-primary focus:ring-1 focus:ring-primary" placeholder="Search by vendor name, tag, or category..." type="text"/>
+</div>
+<div class="mb-2">
+<span class="font-label-md text-label-md text-text-secondary uppercase">Selected Vendors (2)</span>
+</div>
+<!-- Selected Vendor Chips Bento Area -->
+<div class="flex-1 border border-border-main rounded-lg bg-[#FCFBF8] p-4 flex flex-wrap gap-2 content-start min-h-[120px]">
+<!-- Vendor Chip -->
+<div class="flex items-center gap-2 bg-surface-card border border-primary/20 shadow-sm rounded-full py-1.5 pl-2 pr-1.5 animate-fade-in">
+<div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-primary font-title-md text-[10px]">TH</div>
+<span class="font-body-sm text-text-primary font-medium">TechHub Direct</span>
+<button class="w-5 h-5 rounded-full hover:bg-surface-container-high flex items-center justify-center text-text-secondary hover:text-status-red transition-colors">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+<!-- Vendor Chip -->
+<div class="flex items-center gap-2 bg-surface-card border border-primary/20 shadow-sm rounded-full py-1.5 pl-2 pr-1.5 animate-fade-in">
+<div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-primary font-title-md text-[10px]">CS</div>
+<span class="font-body-sm text-text-primary font-medium">CorpSupply Inc.</span>
+<button class="w-5 h-5 rounded-full hover:bg-surface-container-high flex items-center justify-center text-text-secondary hover:text-status-red transition-colors">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Attachments -->
+<section class="bg-surface-card rounded-xl border border-border-main card-shadow p-comfortable flex flex-col">
+<h3 class="font-headline-lg text-title-md text-text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">attachment</span>
+                        Supporting Documents
+                    </h3>
+<!-- Drag & Drop Area -->
+<div class="flex-1 border-2 border-dashed border-border-main hover:border-primary/50 hover:bg-[#F2F7F4] rounded-lg transition-all duration-200 flex flex-col items-center justify-center p-6 text-center cursor-pointer group min-h-[160px]">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center mb-3 group-hover:bg-tint-green group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[24px] text-text-secondary group-hover:text-primary">cloud_upload</span>
+</div>
+<p class="font-title-md text-text-primary mb-1">Click or drag files to upload</p>
+<p class="font-body-sm text-text-secondary">PDF, DOCX, XLSX up to 25MB</p>
+</div>
+<!-- Uploaded File List (Simulated) -->
+<div class="mt-4 space-y-2">
+<div class="flex items-center justify-between p-2 rounded border border-border-main bg-surface">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">description</span>
+<div>
+<p class="font-body-sm text-text-primary font-medium line-clamp-1">Hardware_Specs_Q3.pdf</p>
+<p class="font-caption text-text-secondary">1.2 MB</p>
+</div>
+</div>
+<button class="text-text-secondary hover:text-status-red transition-colors p-1">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+<!-- Bottom Actions -->
+<div class="flex items-center justify-end gap-4 pt-6 mt-loose border-t border-border-main pb-8">
+<button class="px-6 py-2.5 rounded-lg font-title-md text-title-md bg-surface-card border border-border-main text-text-primary hover:bg-surface-container transition-colors shadow-sm">
+                    Save as Draft
+                </button>
+<button class="px-6 py-2.5 rounded-lg font-title-md text-title-md bg-primary-container text-on-primary hover:bg-opacity-90 transition-all shadow-sm flex items-center gap-2">
+                    Review &amp; Send
+                    <span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+</div>
+</main>
+</body></html>
