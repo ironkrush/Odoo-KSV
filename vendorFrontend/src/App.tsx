@@ -29,65 +29,25 @@ import {
 import DashboardSidebar from './components/DashboardSidebar';
 import Dashboard, { PurchaseOrderRecord } from './components/Dashboard';
 import Rfqcomponents from './components/Rfqcomponents';
+import Auth from './components/Auth';
 
-import { RFQ, Quotation, Vendor, PurchaseOrder, Invoice, ActivityItem, KPIMetric } from './types';
+import { RFQ, Quotation, Vendor, Invoice, ActivityItem, KPIMetric } from './types';
 
 export default function App() {
+  const [token, setToken] = useState<string | null>(localStorage.getItem('vb_token'));
+  const [user, setUser] = useState<any>(null);
+
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
-  const [rfqs, setRfqs] = useState<RFQ[]>(() => {
-    const saved = localStorage.getItem('erp_rfqs');
-    return saved ? JSON.parse(saved) : [
-      { id: '102', title: 'Custom Steel Fabrication', vendorCategory: 'Industrial Supplies', status: 'Draft', date: '2026-06-05', itemsCount: 15 },
-      { id: '103', title: 'Raw Rubber Shipments', vendorCategory: 'Raw Materials', status: 'Sent', date: '2026-06-04', itemsCount: 40 },
-      { id: '104', title: 'Corrugated Packaging Boxes', vendorCategory: 'Packaging', status: 'Received', date: '2026-06-03', itemsCount: 120 },
-      { id: '105', title: 'High-Temp Wiring Harnesses', vendorCategory: 'Electronics', status: 'Closed', date: '2026-05-28', itemsCount: 25 },
-    ];
-  });
-
-  const [quotations, setQuotations] = useState<Quotation[]>(() => {
-    const saved = localStorage.getItem('erp_quotations');
-    return saved ? JSON.parse(saved) : [
-      { id: 'QT-812', rfqId: '104', vendorName: 'Apex Industrial Supplies', amount: 8400, status: 'Pending Review', deliveryTimeDays: 5, date: '2026-06-05' },
-      { id: 'QT-813', rfqId: '102', vendorName: 'Global Logistics LLC', amount: 12450, status: 'Pending Review', deliveryTimeDays: 14, date: '2026-06-05' },
-      { id: 'QT-814', rfqId: '103', vendorName: 'Summit Raw Materials', amount: 35000, status: 'Approved', deliveryTimeDays: 30, date: '2026-06-04' },
-      { id: 'QT-815', rfqId: '102', vendorName: 'NextGen Parts Ltd', amount: 11900, status: 'Rejected', deliveryTimeDays: 7, date: '2026-06-03' },
-    ];
-  });
-
-  const [approvalsCount, setApprovalsCount] = useState<number>(5);
-
-  const [recentPos, setRecentPos] = useState<PurchaseOrderRecord[]>(() => {
-    const saved = localStorage.getItem('erp_recent_pos');
-    return saved ? JSON.parse(saved) : [
-      { id: '#PO-1004', vendor: 'Apex Steel Ltd', product: 'Structural Steel Beams', status: 'Delivered', qty: 150, unitPrice: 85.00, total: 12750.00 },
-      { id: '#PO-1003', vendor: 'Titanium Forge Co', product: 'Grade 5 Titanium Rods', status: 'In Transit', qty: 45, unitPrice: 320.00, total: 14400.00 },
-      { id: '#PO-1002', vendor: 'Global Packers', product: 'Corrugated Shipping Boxes', status: 'Pending Approval', qty: 1000, unitPrice: 1.20, total: 1200.00 },
-      { id: '#PO-1001', vendor: 'Zenith Electronics', product: 'Microcontroller Units', status: 'Cancelled', qty: 500, unitPrice: 4.50, total: 2250.00 },
-      { id: '#PO-1000', vendor: 'Nova Chemical Corp', product: 'Industrial Solvent Solns', status: 'Delivered', qty: 80, unitPrice: 95.00, total: 7600.00 },
-    ];
-  });
-
-  const [invoices, setInvoices] = useState<Invoice[]>(() => {
-    const saved = localStorage.getItem('erp_invoices');
-    return saved ? JSON.parse(saved) : [
-      { id: 'INV-928', poId: 'PO-902', vendorName: 'Apex Industrial Supplies', amount: 4500, status: 'Paid', date: '2026-06-01' },
-      { id: 'INV-929', poId: 'PO-901', vendorName: 'Summit Raw Materials', amount: 35000, status: 'Pending', date: '2026-06-04' },
-      { id: 'INV-930', poId: 'PO-903', vendorName: 'NextGen Parts Ltd', amount: 9800, status: 'Overdue', date: '2026-05-30' },
-    ];
-  });
-
-  const [vendors, setVendors] = useState<Vendor[]>(() => {
-    const saved = localStorage.getItem('erp_vendors');
-    return saved ? JSON.parse(saved) : [
-      { id: 'VND-301', name: 'Global Logistics LLC', category: 'Logistics', rating: 4.9, status: 'Active', contactEmail: 'ops@globallogistics.com' },
-      { id: 'VND-302', name: 'Apex Industrial Supplies', category: 'Industrial Supplies', rating: 4.7, status: 'Active', contactEmail: 'sales@apexsupplies.net' },
-      { id: 'VND-303', name: 'Summit Raw Materials', category: 'Raw Materials', rating: 4.5, status: 'Active', contactEmail: 'procure@summitraw.org' },
-      { id: 'VND-304', name: 'NextGen Parts Ltd', category: 'Electronics', rating: 4.2, status: 'Onboarding', contactEmail: 'info@nextgenparts.co' },
-      { id: 'VND-305', name: 'Weston Packaging', category: 'Packaging', rating: 3.8, status: 'Inactive', contactEmail: 'contact@westonpack.com' },
-    ];
-  });
+  const [rfqs, setRfqs] = useState<RFQ[]>([]);
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const [approvalsCount, setApprovalsCount] = useState<number>(0);
+  const [recentPos, setRecentPos] = useState<PurchaseOrderRecord[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [activityLogs, setActivityLogs] = useState<ActivityItem[]>([]);
+  const [spendTrend, setSpendTrend] = useState<any[]>([]);
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showRfqForm, setShowRfqForm] = useState<boolean>(false);
@@ -95,21 +55,24 @@ export default function App() {
   const [rfqTitle, setRfqTitle] = useState('');
   const [rfqCategory, setRfqCategory] = useState('Industrial Supplies');
   const [rfqItemsCount, setRfqItemsCount] = useState<number>(10);
-  const [invPoId, setInvPoId] = useState('PO-901');
-  const [invVendor, setInvVendor] = useState('Summit Raw Materials');
+  const [rfqDescription, setRfqDescription] = useState('');
+  const [rfqDeadline, setRfqDeadline] = useState('');
+  const [rfqVendors, setRfqVendors] = useState('');
+
+  const [invPoId, setInvPoId] = useState('');
+  const [invVendor, setInvVendor] = useState('');
   const [invAmount, setInvAmount] = useState('');
   const [invStatus, setInvStatus] = useState<'Paid' | 'Pending' | 'Overdue'>('Pending');
 
   const [poInvoiceTab, setPoInvoiceTab] = useState<'po' | 'invoices'>('po');
-  const [selectedComparisonRfq, setSelectedComparisonRfq] = useState<string>('102');
-  const [emailModal, setEmailModal] = useState<{ open: boolean; recipient: string; subject: string; body: string } | null>(null);
+  const [selectedComparisonRfq, setSelectedComparisonRfq] = useState<string>('');
+  const [emailModal, setEmailModal] = useState<{ open: boolean; recipient: string; subject: string; body: string; invoiceId: string } | null>(null);
   const [printModal, setPrintModal] = useState<{ open: boolean; type: 'po' | 'invoice'; data: any } | null>(null);
 
-  const [currentRole, setCurrentRole] = useState<'Procurement Officer' | 'Vendor' | 'Manager / Approver' | 'Admin'>('Procurement Officer');
-
-  const [vQuoteRfq, setVQuoteRfq] = useState('102');
+  const [vQuoteRfq, setVQuoteRfq] = useState('');
   const [vQuoteAmount, setVQuoteAmount] = useState('');
   const [vQuoteDelivery, setVQuoteDelivery] = useState('7');
+  const [vQuoteNotes, setVQuoteNotes] = useState('');
 
   const [showPoFormLedger, setShowPoFormLedger] = useState(false);
   const [ledgerPoVendor, setLedgerPoVendor] = useState('');
@@ -117,12 +80,349 @@ export default function App() {
   const [ledgerPoQty, setLedgerPoQty] = useState('100');
   const [ledgerPoPrice, setLedgerPoPrice] = useState('15.00');
 
-  useEffect(() => { localStorage.setItem('erp_rfqs', JSON.stringify(rfqs)); }, [rfqs]);
-  useEffect(() => { localStorage.setItem('erp_quotations', JSON.stringify(quotations)); }, [quotations]);
-  useEffect(() => { localStorage.setItem('erp_recent_pos', JSON.stringify(recentPos)); }, [recentPos]);
-  useEffect(() => { localStorage.setItem('erp_invoices', JSON.stringify(invoices)); }, [invoices]);
-  useEffect(() => { localStorage.setItem('erp_vendors', JSON.stringify(vendors)); }, [vendors]);
+  const [emailSendingStep, setEmailSendingStep] = useState<'idle' | 'sending' | 'success'>('idle');
 
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState<boolean>(false);
+
+  const queryApiUrl = new URLSearchParams(window.location.search).get('api_url');
+  if (queryApiUrl) {
+    localStorage.setItem('API_URL', queryApiUrl);
+  }
+  const baseUrl = queryApiUrl || localStorage.getItem('API_URL') || window.location.origin;
+
+  // Check token and fetch user details on load
+  useEffect(() => {
+    if (token) {
+      fetch(`${baseUrl}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Session expired');
+          return res.json();
+        })
+        .then(data => {
+          setUser(data.user);
+        })
+        .catch(err => {
+          console.error(err);
+          handleLogout();
+        });
+    }
+  }, [token]);
+
+  // Logout utility
+  const handleLogout = () => {
+    localStorage.removeItem('vb_token');
+    setToken(null);
+    setUser(null);
+    setActiveTab('dashboard');
+  };
+
+  // Fetch all workspace datasets
+  const fetchAllData = async () => {
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+
+    try {
+      const [rfqRes, quoteRes, vendorRes, poRes, invRes, logsRes, notificationsRes] = await Promise.all([
+        fetch(`${baseUrl}/api/rfqs`, { headers }),
+        fetch(`${baseUrl}/api/quotations`, { headers }),
+        fetch(`${baseUrl}/api/vendors`, { headers }),
+        fetch(`${baseUrl}/api/purchase-orders`, { headers }),
+        fetch(`${baseUrl}/api/invoices`, { headers }),
+        fetch(`${baseUrl}/api/activity-logs`, { headers }).catch(() => null),
+        fetch(`${baseUrl}/api/notifications`, { headers }).catch(() => null)
+      ]);
+
+      if (rfqRes.ok) {
+        const rfqData = await rfqRes.json();
+        setRfqs(rfqData);
+        if (rfqData.length > 0 && !selectedComparisonRfq) {
+          setSelectedComparisonRfq(rfqData[0].id);
+        }
+      }
+      if (quoteRes.ok) {
+        const quoteData = await quoteRes.json();
+        setQuotations(quoteData);
+        setApprovalsCount(quoteData.filter((q: any) => q.status === 'Pending Review').length);
+      }
+      if (vendorRes.ok) {
+        const vendorData = await vendorRes.json();
+        setVendors(vendorData);
+      }
+      if (poRes.ok) {
+        const poData = await poRes.json();
+        setRecentPos(poData);
+        if (poData.length > 0 && !invPoId) {
+          setInvPoId(poData[0].id);
+        }
+      }
+      if (invRes.ok) {
+        setInvoices(await invRes.json());
+      }
+      if (logsRes && logsRes.ok) {
+        setActivityLogs(await logsRes.json());
+      }
+      if (notificationsRes && notificationsRes.ok) {
+        setNotifications(await notificationsRes.json());
+      }
+
+      // Spend trends for analytics role
+      if (user && ['Admin', 'Manager / Approver'].includes(user.role)) {
+        const trendRes = await fetch(`${baseUrl}/api/analytics/spend-trend`, { headers });
+        if (trendRes.ok) setSpendTrend(await trendRes.json());
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user && token) {
+      fetchAllData();
+    }
+  }, [user, token]);
+
+  // Create RFQ
+  const handleCreateRFQ = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rfqTitle) return;
+
+    try {
+      const res = await fetch(`${baseUrl}/api/rfqs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: rfqTitle,
+          vendorCategory: rfqCategory,
+          itemsCount: Number(rfqItemsCount),
+          description: rfqDescription,
+          deadline: rfqDeadline,
+          assignedVendors: rfqVendors
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to create RFQ');
+      
+      setRfqTitle('');
+      setRfqDescription('');
+      setRfqDeadline('');
+      setRfqVendors('');
+      setShowRfqForm(false);
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handlePublishNewRfq = async (title: string, category: string, itemsCount: number) => {
+    try {
+      const res = await fetch(`${baseUrl}/api/rfqs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title,
+          vendorCategory: category,
+          itemsCount: Number(itemsCount)
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to create RFQ');
+      
+      setActiveTab('rfqs');
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  // Submit quote proposal
+  const handleVendorSubmitQuote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!vQuoteRfq || !vQuoteAmount) return;
+
+    try {
+      const res = await fetch(`${baseUrl}/api/quotations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          rfqId: vQuoteRfq,
+          amount: Number(vQuoteAmount),
+          deliveryTimeDays: Number(vQuoteDelivery),
+          notes: vQuoteNotes
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to submit quote');
+
+      alert("Quote submitted to organizational registry successfully!");
+      setVQuoteAmount('');
+      setVQuoteNotes('');
+      setActiveTab('rfqs');
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  // Generate PO manually
+  const handleLedgerCreatePo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ledgerPoVendor || !ledgerPoProduct) return;
+
+    try {
+      const res = await fetch(`${baseUrl}/api/purchase-orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          vendorName: ledgerPoVendor,
+          product: ledgerPoProduct,
+          qty: parseInt(ledgerPoQty, 10),
+          unitPrice: parseFloat(ledgerPoPrice)
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to create PO');
+
+      setLedgerPoVendor('');
+      setLedgerPoProduct('');
+      setLedgerPoQty('100');
+      setLedgerPoPrice('15.00');
+      setShowPoFormLedger(false);
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  // Create Invoice
+  const handleCreateInvoice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!invAmount || !invPoId) return;
+
+    try {
+      const res = await fetch(`${baseUrl}/api/invoices`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          poId: invPoId,
+          vendorName: invVendor || (vendors.length > 0 ? vendors[0].name : 'Vendor'),
+          amount: Number(invAmount),
+          status: invStatus
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to create invoice');
+
+      setInvAmount('');
+      setShowInvoiceForm(false);
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  // Approve / Reject quotation
+  const handleApproveQuotation = async (id: string) => {
+    try {
+      const res = await fetch(`${baseUrl}/api/quotations/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: 'Approved', approvalRemarks: 'Cleared by Manager Approver.' })
+      });
+      if (!res.ok) throw new Error('Approval action failed.');
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleRejectQuotation = async (id: string) => {
+    try {
+      const res = await fetch(`${baseUrl}/api/quotations/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: 'Rejected', approvalRemarks: 'Declined by Manager Approver.' })
+      });
+      if (!res.ok) throw new Error('Rejection action failed.');
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  // Download PDF
+  const handleDownloadPDF = async (invoice: Invoice) => {
+    try {
+      const response = await fetch(`${baseUrl}/api/invoices/${invoice.id}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Failed to generate PDF');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Invoice-${invoice.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err: any) {
+      alert(`Download failed: ${err.message}`);
+    }
+  };
+
+  // Send real email via Nodemailer
+  const handleEmailInvoice = async () => {
+    if (!emailModal) return;
+    setEmailSendingStep('sending');
+    try {
+      const res = await fetch(`${baseUrl}/api/invoices/${emailModal.invoiceId}/email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ emailRecipient: emailModal.recipient })
+      });
+
+      if (!res.ok) throw new Error('Mailer dispatch failed.');
+      const data = await res.json();
+      
+      setEmailSendingStep('success');
+      setTimeout(() => {
+        setEmailSendingStep('idle');
+        setEmailModal(null);
+      }, 2000);
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message);
+      setEmailSendingStep('idle');
+    }
+  };
+
+  // Dynamic KPI Grid mapping
   const metricsList = useMemo<KPIMetric[]>(() => {
     const activeRfqCount = rfqs.filter(r => r.status === 'Sent' || r.status === 'Received').length + 22;
     const totalQuotations = quotations.length + 74;
@@ -135,108 +435,16 @@ export default function App() {
     ];
   }, [rfqs, quotations, approvalsCount, invoices]);
 
-  const handleCreateRFQ = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!rfqTitle) return;
-    const newRfq: RFQ = {
-      id: Math.floor(106 + Math.random() * 900).toString(),
-      title: rfqTitle,
-      vendorCategory: rfqCategory,
-      status: 'Sent',
-      date: new Date().toISOString().split('T')[0],
-      itemsCount: Number(rfqItemsCount) || 10
-    };
-    setRfqs([newRfq, ...rfqs]);
-    setRfqTitle('');
-    setShowRfqForm(false);
-  };
+  // Auth Guard
+  if (!token || !user) {
+    return <Auth onAuthSuccess={(t, u) => {
+      localStorage.setItem('vb_token', t);
+      setToken(t);
+      setUser(u);
+    }} />;
+  }
 
-  const handlePublishNewRfq = (title: string, category: string, itemsCount: number) => {
-    const newRfq: RFQ = {
-      id: Math.floor(106 + Math.random() * 900).toString(),
-      title,
-      vendorCategory: category,
-      status: 'Sent',
-      date: new Date().toISOString().split('T')[0],
-      itemsCount: itemsCount || 10
-    };
-    setRfqs([newRfq, ...rfqs]);
-    setActiveTab('rfqs');
-  };
-
-  const handleVendorSubmitQuote = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!vQuoteRfq || !vQuoteAmount) return;
-    const amountNum = Number(vQuoteAmount);
-    if (isNaN(amountNum) || amountNum <= 0) return;
-    const newQuote: Quotation = {
-      id: `QT-${Math.floor(816 + Math.random() * 200)}`,
-      rfqId: vQuoteRfq,
-      vendorName: 'Apex Supplier',
-      amount: amountNum,
-      status: 'Pending Review',
-      deliveryTimeDays: Number(vQuoteDelivery) || 7,
-      date: new Date().toISOString().split('T')[0]
-    };
-    setQuotations([newQuote, ...quotations]);
-    alert("Quote submitted to organizational registry successfully!");
-    setVQuoteAmount('');
-    setActiveTab('rfqs');
-  };
-
-  const handleLedgerCreatePo = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ledgerPoVendor || !ledgerPoProduct) return;
-    const qtyNum = parseInt(ledgerPoQty, 10);
-    const unitPriceNum = parseFloat(ledgerPoPrice);
-    if (isNaN(qtyNum) || qtyNum <= 0 || isNaN(unitPriceNum) || unitPriceNum < 0) return;
-    const numberString = recentPos.length > 0
-      ? (Math.max(...recentPos.map(o => parseInt(o.id.replace('#PO-', ''), 10))) + 1).toString()
-      : '1005';
-    const newPo = {
-      id: `#PO-${numberString}`,
-      vendor: ledgerPoVendor,
-      product: ledgerPoProduct,
-      status: 'Pending Approval' as const,
-      qty: qtyNum,
-      unitPrice: unitPriceNum,
-      total: qtyNum * unitPriceNum
-    };
-    setRecentPos([newPo, ...recentPos]);
-    setLedgerPoVendor('');
-    setLedgerPoProduct('');
-    setLedgerPoQty('100');
-    setLedgerPoPrice('15.00');
-    setShowPoFormLedger(false);
-  };
-
-  const handleCreateInvoice = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!invAmount) return;
-    const numAmount = Number(invAmount.replace(/[^0-9.]/g, ''));
-    if (isNaN(numAmount) || numAmount <= 0) return;
-    const newInv: Invoice = {
-      id: `INV-${Math.floor(931 + Math.random() * 900)}`,
-      poId: invPoId,
-      vendorName: invVendor,
-      amount: numAmount,
-      status: invStatus,
-      date: new Date().toISOString().split('T')[0]
-    };
-    setInvoices([newInv, ...invoices]);
-    setInvAmount('');
-    setShowInvoiceForm(false);
-  };
-
-  const handleApproveQuotation = (id: string) => {
-    setQuotations(prev => prev.map(q => q.id === id ? { ...q, status: 'Approved' } : q));
-    if (approvalsCount > 0) setApprovalsCount(c => c - 1);
-  };
-
-  const handleRejectQuotation = (id: string) => {
-    setQuotations(prev => prev.map(q => q.id === id ? { ...q, status: 'Rejected' } : q));
-    if (approvalsCount > 0) setApprovalsCount(c => c - 1);
-  };
+  const currentRole = user.role;
 
   return (
     <div
@@ -257,12 +465,6 @@ export default function App() {
         className="relative flex flex-col flex-1 min-w-0 overflow-hidden"
         style={{ backgroundColor: '#ededed' }}
       >
-        <div className="absolute left-0 top-14 -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none select-none flex items-center justify-center size-3">
-          <svg width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4.5 0V9M0 4.5H9" stroke="#999" strokeWidth="1"/>
-          </svg>
-        </div>
-
         <header
           id="workspace-navbar"
           className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-[#dedede] bg-white px-6"
@@ -276,71 +478,85 @@ export default function App() {
             >
               <Menu className="size-5 shrink-0" />
             </button>
-            <div className="flex items-center gap-2">
-              <button
-                id="sidebar-toggle-desktop"
-                className="hidden md:flex p-1 rounded text-neutral-600 hover:text-black hover:bg-neutral-100 transition-colors"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                title="Toggle Sidebar"
-              >
-                <Sidebar className="size-4 shrink-0" />
-              </button>
-              <div className="flex items-center gap-2 text-sm font-semibold text-black select-none md:ml-3">
-                <LayoutGrid className="size-4 text-black shrink-0" />
-                <span className="capitalize">{activeTab === 'dashboard' ? 'Procurement Hub' : activeTab}</span>
-              </div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-black select-none">
+              <LayoutGrid className="size-4 text-black shrink-0" />
+              <span className="capitalize">{activeTab === 'dashboard' ? 'Procurement Hub' : activeTab}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5 border border-[#dedede] px-2.5 py-1 bg-neutral-50">
-              <span className="text-[9px] font-mono font-bold uppercase text-neutral-400">Testing Role:</span>
-              <select
-                value={currentRole}
-                onChange={(e) => {
-                  const val = e.target.value as any;
-                  setCurrentRole(val);
-                  if (val === 'Vendor') setActiveTab('rfqs');
-                  else if (val === 'Manager / Approver') setActiveTab('approvals');
-                  else setActiveTab('dashboard');
-                }}
-                className="text-[11px] font-bold text-black bg-transparent border-none outline-none cursor-pointer"
+              <span className="text-[9px] font-mono font-bold uppercase text-neutral-400">Authenticated:</span>
+              <span className="text-[11px] font-bold text-emerald-700 font-mono">{user.fullName} ({currentRole})</span>
+            </div>
+
+            <div className="relative">
+              <button
+                id="header-toggle-bell"
+                title="System Alerts"
+                onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+                className="p-1.5 rounded-sm hover:bg-[#ededed] text-neutral-800 relative transition-colors cursor-pointer"
               >
-                <option value="Procurement Officer">Procurement Officer</option>
-                <option value="Vendor">Vendor</option>
-                <option value="Manager / Approver">Manager / Approver</option>
-                <option value="Admin">Admin</option>
-              </select>
+                <Bell className="size-4" />
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute top-0 right-0 size-1.5 rounded-full bg-red-600 animate-ping" />
+                )}
+              </button>
+              {showNotificationsDropdown && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowNotificationsDropdown(false)} />
+                  <div className="absolute right-0 mt-1.5 z-50 w-80 rounded border border-[#dedede] bg-white shadow-lg py-2 text-xs text-neutral-850 max-h-96 overflow-y-auto">
+                    <div className="px-3 py-1.5 text-[9px] font-mono uppercase tracking-wider text-neutral-400 border-b border-[#efefef] font-bold flex justify-between items-center select-none">
+                      <span>Notifications</span>
+                      {notifications.filter(n => !n.read).length > 0 && (
+                        <button
+                          onClick={async () => {
+                            await fetch(`${baseUrl}/api/notifications/read-all`, {
+                              method: 'POST',
+                              headers: { Authorization: `Bearer ${token}` }
+                            });
+                            fetchAllData();
+                          }}
+                          className="text-black underline hover:text-neutral-600 cursor-pointer"
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-center text-neutral-400 font-mono text-[10px] select-none">No notifications</div>
+                    ) : (
+                      notifications.map(n => (
+                        <div
+                          key={n.id}
+                          onClick={async () => {
+                            if (!n.read) {
+                              await fetch(`${baseUrl}/api/notifications/${n.id}/read`, {
+                                method: 'PATCH',
+                                headers: { Authorization: `Bearer ${token}` }
+                              });
+                              fetchAllData();
+                            }
+                          }}
+                          className={`p-3 border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors ${!n.read ? 'bg-neutral-50/50 font-bold text-black' : 'text-neutral-500'}`}
+                        >
+                          <p className="leading-normal">{n.message}</p>
+                          <span className="text-[9px] font-mono text-neutral-400 mt-1 block select-none">{new Date(n.createdAt).toLocaleString()}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
             <button
-              id="header-shortcut-fly"
-              title="Quick Action Link"
-              onClick={() => alert("Action triggered: Share Report Link generated.")}
-              className="p-1.5 rounded-sm hover:bg-[#ededed] text-neutral-800 transition-colors"
+              onClick={handleLogout}
+              title="Sign Out Session"
+              className="px-2.5 py-1 text-[11px] border border-black hover:bg-black hover:text-white transition-colors uppercase font-bold tracking-wider rounded cursor-pointer"
             >
-              <Send className="size-4" />
+              Log Out
             </button>
-            <button
-              id="header-toggle-bell"
-              title="System Alerts"
-              onClick={() => alert(`Active alerts in workspace: ${approvalsCount} approvals require immediate response.`)}
-              className="p-1.5 rounded-sm hover:bg-[#ededed] text-neutral-800 relative transition-colors"
-            >
-              <Bell className="size-4" />
-              {approvalsCount > 0 && (
-                <span className="absolute top-1 right-1 size-2 rounded-full bg-red-600 animate-ping" />
-              )}
-            </button>
-            <div
-              onClick={() => setActiveTab('profile')}
-              className="h-7 w-7 rounded-full bg-black flex items-center justify-center p-0.5 cursor-pointer hover:scale-105 transition-transform"
-              title="View User Account & Profile"
-            >
-              <div className="h-full w-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                <User className="size-4 text-black shrink-0 relative top-0.5" />
-              </div>
-            </div>
           </div>
         </header>
 
@@ -357,8 +573,23 @@ export default function App() {
                 orders={recentPos}
                 onViewAll={() => setActiveTab('purchaseorders_invoices')}
                 onAddOrder={(newOrder) => setRecentPos([newOrder, ...recentPos])}
-                onUpdateStatus={(id, status) => setRecentPos(prev => prev.map(o => o.id === id ? { ...o, status } : o))}
+                onUpdateStatus={async (id, status) => {
+                  try {
+                    await fetch(`${baseUrl}/api/purchase-orders/${id}/status`, {
+                      method: 'PATCH',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                      },
+                      body: JSON.stringify({ status })
+                    });
+                    fetchAllData();
+                  } catch (err) {
+                    console.error(err);
+                  }
+                }}
                 currentRole={currentRole}
+                spendTrend={spendTrend}
               />
             )}
 
@@ -419,7 +650,7 @@ export default function App() {
                         <th className="pb-3 pr-3">Subject Material</th>
                         <th className="pb-3 pr-3">Target Industry</th>
                         <th className="pb-3 pr-3 text-right font-semibold">Items</th>
-                        <th className="pb-3 pr-3">Creation Date</th>
+                        <th className="pb-3 pr-3">Deadline</th>
                         <th className="pb-3 text-right">Status</th>
                       </tr>
                     </thead>
@@ -430,13 +661,14 @@ export default function App() {
                           <td className="font-bold text-black text-sm">{rfq.title}</td>
                           <td className="font-semibold text-neutral-600">{rfq.vendorCategory}</td>
                           <td className="text-right font-mono font-bold text-black pr-3">{rfq.itemsCount.toLocaleString()} units</td>
-                          <td className="font-mono text-neutral-500">{rfq.date}</td>
+                          <td className="font-mono text-neutral-500">{rfq.deadline || 'N/A'}</td>
                           <td className="text-right">
-                            <span className={`inline-block px-2 py-0.5 rounded border text-[10px] uppercase font-bold ${rfq.status === 'Sent' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                rfq.status === 'Received' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                  rfq.status === 'Closed' ? 'bg-neutral-100 text-neutral-600 border-neutral-300' :
-                                    'bg-neutral-50 text-neutral-800 border-neutral-200'
-                              }`}>
+                            <span className={`inline-block px-2 py-0.5 rounded border text-[10px] uppercase font-bold ${
+                              rfq.status === 'Sent' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                              rfq.status === 'Received' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                              rfq.status === 'Closed' ? 'bg-neutral-100 text-neutral-600 border-neutral-300' :
+                              'bg-neutral-50 text-neutral-800 border-neutral-200'
+                            }`}>
                               {rfq.status}
                             </span>
                           </td>
@@ -467,9 +699,9 @@ export default function App() {
                       <tr className="border-b border-[#dedede] text-[10px] font-mono uppercase text-neutral-400">
                         <th className="pb-3">Quote ID</th>
                         <th className="pb-3">Source RFQ</th>
-                        <th className="pb-3">Vendor identity</th>
-                        <th className="pb-3 text-right">Quoted price</th>
-                        <th className="pb-3 text-right">Lead period</th>
+                        <th className="pb-3">Vendor Identity</th>
+                        <th className="pb-3 text-right">Quoted Price</th>
+                        <th className="pb-3 text-right">Lead Period</th>
                         <th className="pb-3 text-right">Status</th>
                         <th className="pb-3 text-right pr-2">Workspace Approvals</th>
                       </tr>
@@ -483,15 +715,16 @@ export default function App() {
                           <td className="text-right font-mono font-bold text-black">${q.amount.toLocaleString()}</td>
                           <td className="text-right font-mono">{q.deliveryTimeDays} working days</td>
                           <td className="text-right">
-                            <span className={`inline-block px-2.5 py-0.5 rounded border text-[10px] uppercase font-bold ${q.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
-                                q.status === 'Rejected' ? 'bg-rose-50 text-rose-700 border-rose-300' :
-                                  'bg-amber-50 text-amber-700 border-amber-300'
-                              }`}>
+                            <span className={`inline-block px-2.5 py-0.5 rounded border text-[10px] uppercase font-bold ${
+                              q.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
+                              q.status === 'Rejected' ? 'bg-rose-50 text-rose-700 border-rose-300' :
+                              'bg-amber-50 text-amber-700 border-amber-300'
+                            }`}>
                               {q.status}
                             </span>
                           </td>
                           <td className="text-right">
-                            {q.status === 'Pending Review' ? (
+                            {q.status === 'Pending Review' && ['Admin', 'Manager / Approver'].includes(currentRole) ? (
                               <div className="inline-flex gap-1.5 justify-end">
                                 <button id={`approve-q-${q.id}`} onClick={() => handleApproveQuotation(q.id)} className="px-2.5 py-1 bg-black text-white text-[11px] font-semibold rounded hover:bg-neutral-800 transition-colors">Accept Bid</button>
                                 <button id={`reject-q-${q.id}`} onClick={() => handleRejectQuotation(q.id)} className="px-2.5 py-1 border border-[#ced4da] rounded text-[11px] font-semibold hover:border-black transition-colors">Decline</button>
@@ -512,14 +745,14 @@ export default function App() {
               <div className="bg-white border border-[#dedede] rounded p-6 animate-fade-in space-y-6">
                 <div>
                   <h2 className="text-xl font-bold tracking-tight">Approvals Sign-Off Queue</h2>
-                  <p className="text-xs text-neutral-500 font-mono mt-1">Direct pipeline of cost authorization items requiring Shaban's clearance.</p>
+                  <p className="text-xs text-neutral-500 font-mono mt-1">Direct pipeline of cost authorization items requiring clearance.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="border border-neutral-200 rounded p-4 bg-amber-50/50 flex items-start gap-3">
                     <AlertCircle className="size-5 text-amber-600 shrink-0 mt-0.5" />
                     <div>
                       <h4 className="text-xs font-bold text-black uppercase tracking-wider">Interactive Clearances</h4>
-                      <p className="text-xs text-neutral-600 mt-1 leading-normal">Click accept on the pending bids below to process. This interface dynamically reduces the primary workspace approvals counter.</p>
+                      <p className="text-xs text-neutral-600 mt-1 leading-normal">Click accept on the pending bids below to process. This interface dynamically updates the workspace approvals counter.</p>
                     </div>
                   </div>
                   <div className="border border-neutral-200 rounded p-4 bg-[#fafafa] flex items-stretch justify-between">
@@ -574,7 +807,7 @@ export default function App() {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b border-[#dedede] text-[10px] font-mono uppercase text-neutral-400">
-                        <th className="pb-3">Vendor Id</th>
+                        <th className="pb-3">Vendor ID</th>
                         <th className="pb-3">Vendor legal identity</th>
                         <th className="pb-3">Materials Categorization</th>
                         <th className="pb-3">Rating Score</th>
@@ -602,10 +835,11 @@ export default function App() {
                               </div>
                             </td>
                             <td>
-                              <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${v.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                  v.status === 'Onboarding' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                    'bg-neutral-100 text-neutral-500 border-neutral-300'
-                                }`}>
+                              <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${
+                                v.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                v.status === 'Onboarding' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                'bg-neutral-100 text-neutral-500 border-neutral-300'
+                              }`}>
                                 {v.status}
                               </span>
                             </td>
@@ -619,36 +853,6 @@ export default function App() {
                         ))}
                     </tbody>
                   </table>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'categories' && (
-              <div className="bg-white border border-[#dedede] rounded p-6 animate-fade-in space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold tracking-tight">Supplies & Work Categorization</h2>
-                  <p className="text-xs text-neutral-500 font-mono mt-1">Vendor profiles segregated by primary manufacturing capabilities.</p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {[
-                    { title: 'Raw Materials', desc: 'Aggregates, alloys, chemical constituents, wood substrates.', codes: '6 Active Vendors', spend: '$148k Spend' },
-                    { title: 'Industrial Supplies', desc: 'Cylinder sleeves, tooling elements, hydraulic fluids.', codes: '4 Active Vendors', spend: '$92k Spend' },
-                    { title: 'Packaging', desc: 'Corrugated cartons, high-density polyethylene bags, shrink bands.', codes: '2 Active Vendors', spend: '$54k Spend' },
-                    { title: 'Electronics', desc: 'Printed circuit assemblies, wiring patterns, sensor modules.', codes: '3 Active Vendors', spend: '$115k Spend' },
-                    { title: 'Logistics', desc: 'Third-party transport, local ocean freight, customs clearance.', codes: '5 Active Vendors', spend: '$210k Spend' },
-                  ].map((cat, i) => (
-                    <div key={i} className="p-5 border border-[#dedede] hover:border-black rounded-lg transition-all space-y-3">
-                      <div className="flex justify-between items-start">
-                        <span className="text-sm font-bold text-black">{cat.title}</span>
-                        <FolderOpen className="size-4 text-neutral-400" />
-                      </div>
-                      <p className="text-xs text-neutral-500 leading-normal">{cat.desc}</p>
-                      <div className="flex items-center justify-between pt-2 border-t border-[#f0f0f0]">
-                        <span className="text-[10px] font-mono text-neutral-400 font-bold uppercase">{cat.codes}</span>
-                        <span className="text-[10px] font-mono text-black font-bold uppercase">{cat.spend}</span>
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             )}
@@ -691,7 +895,6 @@ export default function App() {
 
                   return (
                     <div className="space-y-6">
-                      {/* Bid Insights Summary */}
                       <div className="grid grid-cols-1 md:grid-cols-4 border border-[#dedede] divide-y md:divide-y-0 md:divide-x divide-[#dedede] bg-neutral-50/50">
                         <div className="p-4 flex flex-col">
                           <span className="text-[10px] font-mono font-bold uppercase text-neutral-400">Lowest Quoted Bid</span>
@@ -715,7 +918,6 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Visual Price Comparison Bars */}
                       <div className="border border-[#dedede] p-5 space-y-4">
                         <h3 className="font-bold text-xs uppercase tracking-wider text-black font-mono">Relative Pricing Spectrum</h3>
                         <div className="space-y-3">
@@ -746,14 +948,12 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Matrix Grid Comparison Table */}
                       <div className="border border-[#dedede] overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                           <thead>
                             <tr className="border-b border-[#dedede] bg-neutral-50 text-[10px] font-mono uppercase text-neutral-500">
                               <th className="py-3 px-4 font-bold">Supplier Identity</th>
-                              <th className="py-3 px-4 text-center font-bold">Vendor Rating</th>
-                              <th className="py-3 px-4 text-right font-bold">Lead Time</th>
+                              <th className="py-3 px-4 text-center font-bold">Lead Time</th>
                               <th className="py-3 px-4 text-right font-bold">Bid Offer</th>
                               <th className="py-3 px-4 text-center font-bold">Clearance Status</th>
                               <th className="py-3 px-4 text-right font-bold">Workspace Approvals</th>
@@ -762,41 +962,25 @@ export default function App() {
                           <tbody className="divide-y divide-[#efefef] text-xs">
                             {comparedQuotes.map((q) => {
                               const isLowest = q.amount === minAmount;
-                              const isFastest = q.deliveryTimeDays === fastestLead;
-                              const ratingVal = vendors.find(v => v.name === q.vendorName)?.rating || '4.5';
                               return (
-                                <tr key={q.id} className={`hover:bg-neutral-50/50 transition-colors ${isLowest ? 'bg-emerald-50/10' : ''}`}>
-                                  <td className="py-4 px-4">
-                                    <div className="font-bold text-black">{q.vendorName}</div>
-                                    <div className="text-[10px] text-neutral-400 font-mono mt-0.5">Bid Ref: #{q.id}</div>
+                                <tr key={q.id} className={`h-12 hover:bg-neutral-50/50 transition-colors ${isLowest ? 'bg-emerald-50/20' : ''}`}>
+                                  <td className="py-2 px-4">
+                                    <div className="font-bold text-black text-sm">{q.vendorName}</div>
+                                    <span className="text-[10px] text-neutral-400 font-mono">Proposal Reference {q.id}</span>
                                   </td>
-                                  <td className="py-4 px-4 text-center">
-                                    <div className="inline-flex items-center gap-1 font-bold text-neutral-800">
-                                      <Star className="size-3 fill-black text-black" />
-                                      <span>{ratingVal}</span>
-                                    </div>
-                                  </td>
-                                  <td className="py-4 px-4 text-right">
-                                    <span className={`font-mono font-bold ${isFastest ? 'text-blue-700' : 'text-neutral-600'}`}>
-                                      {q.deliveryTimeDays} working days
-                                    </span>
-                                  </td>
-                                  <td className="py-4 px-4 text-right font-mono font-bold text-black">
-                                    <span className={isLowest ? 'text-emerald-700 font-extrabold' : ''}>
-                                      ${q.amount.toLocaleString()}
-                                    </span>
-                                  </td>
-                                  <td className="py-4 px-4 text-center">
+                                  <td className="py-2 px-4 text-center font-mono">{q.deliveryTimeDays} working days</td>
+                                  <td className="py-2 px-4 text-right font-mono font-bold text-neutral-800">${q.amount.toLocaleString()}</td>
+                                  <td className="py-2 px-4 text-center">
                                     <span className={`inline-block px-2 py-0.5 rounded border text-[9px] uppercase font-bold ${
-                                      q.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
-                                      q.status === 'Rejected' ? 'bg-rose-50 text-rose-700 border-rose-300' :
-                                      'bg-amber-50 text-amber-700 border-amber-300'
+                                      q.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                      q.status === 'Rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                                      'bg-amber-50 text-amber-700 border-amber-200'
                                     }`}>
                                       {q.status}
                                     </span>
                                   </td>
-                                  <td className="py-4 px-4 text-right">
-                                    {q.status === 'Pending Review' ? (
+                                  <td className="py-2 px-4 text-right">
+                                    {q.status === 'Pending Review' && ['Admin', 'Manager / Approver'].includes(currentRole) ? (
                                       <div className="inline-flex gap-1.5 justify-end">
                                         <button
                                           id={`accept-comparison-${q.id}`}
@@ -835,7 +1019,6 @@ export default function App() {
                     <h2 className="text-xl font-bold tracking-tight text-neutral-900">Purchase Orders & Invoices Ledger</h2>
                     <p className="text-xs text-neutral-500 font-mono mt-1">Review, generate, print, and email official procurement files.</p>
                   </div>
-                  {/* Tab Selector (Hidden for Vendors who only see POs) */}
                   {currentRole !== 'Vendor' && (
                     <div className="inline-flex rounded-lg border border-[#dedede] p-1 bg-neutral-50 shrink-0">
                       <button
@@ -860,7 +1043,6 @@ export default function App() {
 
                 {(poInvoiceTab === 'po' || currentRole === 'Vendor') ? (
                   <div className="space-y-4">
-                    {/* New PO Header row with Create PO button */}
                     <div className="flex justify-between items-center">
                       <h3 className="font-bold text-xs uppercase tracking-wider text-black">Purchase Orders</h3>
                       {currentRole === 'Procurement Officer' && (
@@ -880,7 +1062,7 @@ export default function App() {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <div>
                             <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Vendor/Supplier</label>
-                            <input type="text" required placeholder="e.g. Apex Steel Ltd" value={ledgerPoVendor} onChange={(e) => setLedgerPoVendor(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none" />
+                            <input type="text" required placeholder="e.g. Apex Industrial Supplies" value={ledgerPoVendor} onChange={(e) => setLedgerPoVendor(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none" />
                           </div>
                           <div>
                             <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Product Description</label>
@@ -918,7 +1100,7 @@ export default function App() {
                           {recentPos.map((po) => (
                             <tr key={po.id} className="hover:bg-[#fafafa] transition-colors h-14">
                               <td className="font-mono font-bold text-neutral-500 px-2">{po.id}</td>
-                              <td className="font-bold text-black text-sm px-2">{po.vendor}</td>
+                              <td className="font-bold text-black text-sm px-2">{po.vendorName}</td>
                               <td className="text-neutral-500 text-xs px-2">{po.product}</td>
                               <td className="text-right font-mono text-neutral-700 px-2">{po.qty.toLocaleString()} units</td>
                               <td className="text-right font-mono font-bold text-black px-4">${po.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
@@ -933,26 +1115,7 @@ export default function App() {
                                 </span>
                               </td>
                               <td className="text-right pr-2">
-                                {currentRole === 'Procurement Officer' ? (
-                                  <div className="inline-flex items-center gap-1.5 justify-end">
-                                    <button
-                                      onClick={() => setPrintModal({ open: true, type: 'po', data: po })}
-                                      className="p-1.5 rounded hover:bg-neutral-100 text-neutral-600 hover:text-black transition-colors border border-neutral-200"
-                                      title="Print Document"
-                                    >
-                                      <Printer className="size-3.5" />
-                                    </button>
-                                    <button
-                                      onClick={() => setEmailModal({ open: true, recipient: 'vendor@gmail.com', subject: `Purchase Order ${po.id}`, body: `Please find attached Purchase Order ${po.id} for ${po.product}.` })}
-                                      className="p-1.5 rounded hover:bg-neutral-100 text-neutral-600 hover:text-black transition-colors border border-neutral-200"
-                                      title="Email Document"
-                                    >
-                                      <Mail className="size-3.5" />
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <span className="text-[10px] font-mono text-neutral-400">View Only</span>
-                                )}
+                                <span className="text-[10px] font-mono text-neutral-400">View Only</span>
                               </td>
                             </tr>
                           ))}
@@ -982,18 +1145,20 @@ export default function App() {
                           <div>
                             <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Select Purchase Order (PO)</label>
                             <select value={invPoId} onChange={(e) => setInvPoId(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none font-mono">
+                              <option value="">-- Choose PO --</option>
                               {recentPos.map(p => (<option key={p.id} value={p.id}>{p.id} (${p.total.toLocaleString()})</option>))}
                             </select>
                           </div>
                           <div>
                             <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Vendor Entity</label>
                             <select value={invVendor} onChange={(e) => setInvVendor(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none font-semibold">
+                              <option value="">-- Choose Vendor --</option>
                               {vendors.map(v => (<option key={v.id} value={v.name}>{v.name}</option>))}
                             </select>
                           </div>
                           <div>
                             <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Invoice Dollar value</label>
-                            <input type="text" required value={invAmount} onChange={(e) => setInvAmount(e.target.value)} placeholder="e.g. 145000" className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none" />
+                            <input type="text" required value={invAmount} onChange={(e) => setInvAmount(e.target.value)} placeholder="e.g. 14500" className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none" />
                           </div>
                           <div>
                             <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Accounting Status</label>
@@ -1019,7 +1184,6 @@ export default function App() {
                             <th className="pb-3 px-2">Matched PO</th>
                             <th className="pb-3 px-2">Vendor Business</th>
                             <th className="pb-3 px-2 text-right">Invoiced Amount</th>
-                            <th className="pb-3 px-2 text-right">Filing Date</th>
                             <th className="pb-3 text-right">Payment Status</th>
                             <th className="pb-3 text-center pr-2">Actions</th>
                           </tr>
@@ -1030,8 +1194,7 @@ export default function App() {
                               <td className="font-mono font-bold text-black px-2">{inv.id}</td>
                               <td className="font-mono text-neutral-400 px-2">{inv.poId}</td>
                               <td className="font-bold text-black text-sm px-2">{inv.vendorName}</td>
-                              <td className="text-right font-mono font-bold text-black px-2">${inv.amount.toLocaleString()}</td>
-                              <td className="text-right font-mono text-neutral-500 px-2">{inv.date}</td>
+                              <td className="text-right font-mono font-bold text-black px-2">${inv.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                               <td>
                                 <span className={`inline-block px-2.5 py-0.5 rounded border text-[9px] uppercase font-bold ${
                                   inv.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
@@ -1042,26 +1205,26 @@ export default function App() {
                                 </span>
                               </td>
                               <td className="text-right pr-2">
-                                {currentRole === 'Procurement Officer' ? (
-                                  <div className="inline-flex items-center gap-1.5 justify-end">
-                                    <button
-                                      onClick={() => setPrintModal({ open: true, type: 'invoice', data: inv })}
-                                      className="p-1.5 rounded hover:bg-neutral-100 text-neutral-600 hover:text-black transition-colors border border-neutral-200"
-                                      title="Print Document"
-                                    >
-                                      <Printer className="size-3.5" />
-                                    </button>
-                                    <button
-                                      onClick={() => setEmailModal({ open: true, recipient: 'vendor@gmail.com', subject: `Invoice ${inv.id}`, body: `Please find attached Invoice ${inv.id} matching purchase order ${inv.poId}.` })}
-                                      className="p-1.5 rounded hover:bg-neutral-100 text-neutral-600 hover:text-black transition-colors border border-neutral-200"
-                                      title="Email Document"
-                                    >
-                                      <Mail className="size-3.5" />
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <span className="text-[10px] font-mono text-neutral-400">View Only</span>
-                                )}
+                                <div className="inline-flex items-center gap-1.5 justify-end">
+                                  <button
+                                    onClick={() => handleDownloadPDF(inv)}
+                                    className="p-1.5 rounded hover:bg-neutral-100 text-neutral-600 hover:text-black transition-colors border border-neutral-200 cursor-pointer font-bold flex items-center gap-1"
+                                    title="Download PDF"
+                                  >
+                                    <Download className="size-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const matchedVendor = vendors.find(v => v.name === inv.vendorName);
+                                      const recipientEmail = matchedVendor ? matchedVendor.contactEmail : user.email;
+                                      setEmailModal({ open: true, recipient: recipientEmail, subject: `[Invoice Attached] Invoice ${inv.id}`, body: `Please find attached Invoice ${inv.id} for $${inv.amount}.`, invoiceId: inv.id });
+                                    }}
+                                    className="p-1.5 rounded hover:bg-neutral-100 text-neutral-600 hover:text-black transition-colors border border-neutral-200 cursor-pointer"
+                                    title="Email PDF"
+                                  >
+                                    <Mail className="size-3.5" />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -1088,6 +1251,7 @@ export default function App() {
                       onChange={(e) => setVQuoteRfq(e.target.value)}
                       className="w-full text-xs p-3 bg-white border border-[#dedede] outline-none focus:border-black font-semibold"
                     >
+                      <option value="">-- Choose RFQ --</option>
                       {rfqs.map(r => (
                         <option key={r.id} value={r.id}>#{r.id} - {r.title} ({r.vendorCategory})</option>
                       ))}
@@ -1099,14 +1263,14 @@ export default function App() {
                     <input
                       type="text"
                       disabled
-                      value="Apex Supplier"
+                      value={user.fullName}
                       className="w-full text-xs p-3 bg-neutral-100 border border-[#dedede] outline-none font-bold text-neutral-500 cursor-not-allowed"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1.5">Quoted price ($)</label>
+                      <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1.5">Quoted Price ($)</label>
                       <input
                         type="number"
                         required
@@ -1128,10 +1292,21 @@ export default function App() {
                     </div>
                   </div>
 
+                  <div>
+                    <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1.5">Quotation Remarks</label>
+                    <textarea
+                      value={vQuoteNotes}
+                      onChange={(e) => setVQuoteNotes(e.target.value)}
+                      placeholder="Special logistics terms, discount offers, etc."
+                      className="w-full text-xs p-3 bg-white border border-[#dedede] outline-none focus:border-black resize-none"
+                      rows={3}
+                    />
+                  </div>
+
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="px-5 py-2 bg-black hover:bg-neutral-800 text-white rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
+                      className="px-5 py-2 bg-black hover:bg-neutral-800 text-white rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
                     >
                       Submit Quote Proposal
                     </button>
@@ -1161,13 +1336,6 @@ export default function App() {
                     </div>
                     <input type="checkbox" defaultChecked className="accent-black" />
                   </div>
-                  <div className="p-4 flex justify-between items-center">
-                    <div>
-                      <p className="font-bold text-black">Email Copy on Publish</p>
-                      <p className="text-neutral-500">Send an automated copy of newly published RFQs to matched suppliers.</p>
-                    </div>
-                    <input type="checkbox" className="accent-black" />
-                  </div>
                 </div>
               </div>
             )}
@@ -1176,22 +1344,38 @@ export default function App() {
               <div className="bg-white border border-[#dedede] rounded p-6 animate-fade-in space-y-6">
                 <div>
                   <h2 className="text-xl font-bold tracking-tight">Workspace Procurement Reports</h2>
-                  <p className="text-xs text-neutral-500 font-mono mt-1">Print ready summaries generated for Shaban.</p>
+                  <p className="text-xs text-neutral-500 font-mono mt-1">Export summary compliance datasets directly in CSV formats.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                   <div className="border border-neutral-300 rounded p-6 flex flex-col justify-between space-y-4">
                     <div>
                       <h4 className="text-sm font-bold text-black uppercase tracking-wide">Q2 Material Procurement Report</h4>
-                      <p className="text-xs text-neutral-500 mt-1 leading-normal">Consolidated ledger of all quotation bids, approved PO commitment totals, and active material supplier compliance metrics from Jan to Jun 2026.</p>
+                      <p className="text-xs text-neutral-500 mt-1 leading-normal">Consolidated ledger of all quotation bids, approved PO commitment totals, and active material supplier compliance metrics.</p>
                     </div>
-                    <button onClick={() => alert("Downloading PDF summary report...")} className="w-full py-2 bg-black text-white rounded text-xs font-bold uppercase tracking-wider">Export Print PDF Document</button>
+                    <button onClick={() => window.print()} className="w-full py-2 bg-black text-white rounded text-xs font-bold uppercase tracking-wider cursor-pointer">Print PDF Document</button>
                   </div>
                   <div className="border border-neutral-300 rounded p-6 flex flex-col justify-between space-y-4">
                     <div>
                       <h4 className="text-sm font-bold text-black uppercase tracking-wide">Registered Compliance Matrix</h4>
-                      <p className="text-xs text-neutral-500 mt-1 leading-normal">Compliance logs details. Generates records summarizing delivery delay rates and quality verification rejects for Apex Industrial Supplies and other vendors.</p>
+                      <p className="text-xs text-neutral-500 mt-1 leading-normal">Compliance logs details summarizing delivery delay rates and quality verification rejects for all registered vendors.</p>
                     </div>
-                    <button onClick={() => alert("Downloading CSV compliance sheet...")} className="w-full py-2 bg-black text-white rounded text-xs font-bold uppercase tracking-wider">Export CSV Spreadsheet</button>
+                    <button
+                      onClick={() => {
+                        const csvContent = "data:text/csv;charset=utf-8," 
+                          + "Vendor ID,Name,Category,Email,Rating,Status\n"
+                          + vendors.map(v => `${v.id},"${v.name}","${v.category}","${v.contactEmail}",${v.rating},${v.status}`).join("\n");
+                        const encodedUri = encodeURI(csvContent);
+                        const link = document.createElement("a");
+                        link.setAttribute("href", encodedUri);
+                        link.setAttribute("download", "vendor_compliance_report.csv");
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                      }}
+                      className="w-full py-2 bg-black text-white rounded text-xs font-bold uppercase tracking-wider cursor-pointer"
+                    >
+                      Export CSV Spreadsheet
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1204,31 +1388,29 @@ export default function App() {
                   <p className="text-xs text-neutral-500 font-mono mt-1">Real-time non-repudiation timestamps monitoring transactions in VendorBridge.</p>
                 </div>
                 <div className="space-y-4">
-                  {[
-                    { id: 'ACT-905', title: 'Purchase Order #PO-1004 state cleared', desc: 'Apex Steel Ltd material release logged as Delivered.', time: 'Just now', type: 'po' },
-                    { id: 'ACT-904', title: 'Purchase Order #PO-1003 shipment initialized', desc: 'Grade 5 Titanium Rods routed for transit clearance.', time: '14 minutes ago', type: 'po' },
-                    { id: 'ACT-903', title: 'New RFQ established for supplies', desc: 'Corrugated Packaging Boxes request finalized & sent to packaging vendors.', time: '2 hours ago', type: 'rfq' },
-                    { id: 'ACT-902', title: 'Vendor Apex Industrial Supplies invoice paid', desc: 'Financial ledger clearance of $4,500.00 posted.', time: '1 day ago', type: 'invoice' },
-                    { id: 'ACT-901', title: 'New supplier registration onboarding status', desc: 'NextGen Parts Ltd contact verified and authenticated.', time: '3 days ago', type: 'vendor' },
-                  ].map((act) => (
+                  {activityLogs.map((act) => (
                     <div key={act.id} className="flex items-start justify-between p-4 border border-[#eee] rounded hover:border-black transition-colors gap-3 bg-[#fafafa]">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono font-bold text-neutral-400">[{act.id}]</span>
+                          <span className="text-xs font-mono font-bold text-neutral-400">[{act.id.substring(0, 8)}]</span>
                           <h4 className="text-sm font-bold text-black">{act.title}</h4>
                         </div>
-                        <p className="text-xs text-neutral-600">{act.desc}</p>
+                        <p className="text-xs text-neutral-600">{act.detail}</p>
                       </div>
-                      <span className="text-[10px] text-neutral-400 font-mono shrink-0 whitespace-nowrap">{act.time}</span>
+                      <span className="text-[10px] text-neutral-400 font-mono shrink-0 whitespace-nowrap">{new Date(act.timestamp).toLocaleString()}</span>
                     </div>
                   ))}
+                  {activityLogs.length === 0 && (
+                    <div className="py-12 border border-dashed border-neutral-300 rounded text-center text-xs font-mono text-neutral-400">
+                      No system events logged in this organization session yet.
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
             {activeTab === 'profile' && (
               <div className="bg-white border border-[#dedede] p-0 animate-fade-in space-y-0 shadow-xs rounded-none overflow-hidden">
-                {/* Hero Workspace Banner from Unsplash */}
                 <div className="h-48 w-full relative">
                   <img
                     src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80"
@@ -1237,13 +1419,11 @@ export default function App() {
                   />
                   <div className="absolute inset-0 bg-black/45" />
                   <div className="absolute bottom-6 left-6 flex items-end gap-4">
-                    <img
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80"
-                      alt="User Avatar"
-                      className="size-20 border-2 border-white object-cover"
-                    />
+                    <div className="h-20 w-20 border-2 border-white bg-black flex items-center justify-center text-white font-bold text-xl uppercase">
+                      {user.fullName.substring(0, 2)}
+                    </div>
                     <div className="mb-1 text-white">
-                      <h2 className="text-xl font-bold">{currentRole === 'Procurement Officer' ? 'Shaban Haider' : currentRole === 'Vendor' ? 'Apex Supplier' : currentRole === 'Manager / Approver' ? 'Sarah Jenkins' : 'Admin User'}</h2>
+                      <h2 className="text-xl font-bold">{user.fullName}</h2>
                       <p className="text-xs text-neutral-300 font-mono font-medium">{currentRole} • Enterprise Sourcing</p>
                     </div>
                   </div>
@@ -1262,7 +1442,7 @@ export default function App() {
                         <input
                           type="text"
                           disabled
-                          value={currentRole === 'Procurement Officer' ? 'Shaban Haider' : currentRole === 'Vendor' ? 'Apex Supplier' : currentRole === 'Manager / Approver' ? 'Sarah Jenkins' : 'Admin User'}
+                          value={user.fullName}
                           className="w-full p-2.5 bg-neutral-50 border border-[#dedede] text-neutral-600 font-bold outline-none cursor-not-allowed"
                         />
                       </div>
@@ -1271,7 +1451,7 @@ export default function App() {
                         <input
                           type="text"
                           disabled
-                          value={currentRole === 'Procurement Officer' ? 'shaban@vendorbridge.com' : currentRole === 'Vendor' ? 'supplier@apex.com' : currentRole === 'Manager / Approver' ? 'sarah@vendorbridge.com' : 'admin@vendorbridge.com'}
+                          value={user.email}
                           className="w-full p-2.5 bg-neutral-50 border border-[#dedede] text-neutral-600 font-mono outline-none cursor-not-allowed"
                         />
                       </div>
@@ -1298,27 +1478,6 @@ export default function App() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Access Credentials & Tokens */}
-                  <div className="border-t border-[#dedede] pt-6 space-y-4">
-                    <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-black font-mono">System Access Credentials</h4>
-                      <p className="text-xs text-neutral-500 font-mono mt-0.5">Manage tokenized API keys for procurement integrations.</p>
-                    </div>
-
-                    <div className="p-4 border border-[#dedede] bg-neutral-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <span className="text-[10px] font-mono font-bold uppercase text-neutral-400 block">Security API Access Token</span>
-                        <code className="text-xs font-bold font-mono text-neutral-800 mt-1 block">••••••••••••••••••••••••vb_sec_live_9f2a71</code>
-                      </div>
-                      <button
-                        onClick={() => alert("Simulated: Re-generating API token details...")}
-                        className="px-4 py-2 bg-black hover:bg-neutral-800 text-white text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
-                      >
-                        Reset Access Token
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -1334,7 +1493,6 @@ export default function App() {
                   <p className="font-bold text-black">Key Features Implemented:</p>
                   <ul className="list-disc pl-5 space-y-2">
                     <li><strong>Color Scheme:</strong> Main body configured in soft #ededed while primary accents and buttons are deep solid black.</li>
-                    <li><strong>Procurement Banner:</strong> The "Welcome Shaban Haider" hero contains a landscape graphic banner.</li>
                     <li><strong>Spend Analysis:</strong> Real-time charts powered by Recharts with flat black top border lines.</li>
                     <li><strong>Clear Audit Logs:</strong> Click on buttons to dismiss items or trigger quotations which updates standard states.</li>
                   </ul>
@@ -1358,130 +1516,70 @@ export default function App() {
                 <X className="size-4" />
               </button>
             </div>
-            <div className="p-5 space-y-4 text-xs">
-              <div className="space-y-1">
-                <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400">Recipient Email Address</label>
-                <input
-                  type="email"
-                  value={emailModal.recipient}
-                  onChange={(e) => setEmailModal({ ...emailModal, recipient: e.target.value })}
-                  className="w-full text-xs p-2.5 bg-white border border-[#dedede] rounded-lg outline-none focus:border-black transition-colors"
-                />
+            
+            {emailSendingStep === 'sending' ? (
+              <div className="p-8 flex flex-col items-center justify-center gap-3 text-xs">
+                <svg className="animate-spin size-8 text-black" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <p className="font-mono text-neutral-500 animate-pulse">Engaging SMTP Handshakes & Attaching Invoice PDF...</p>
               </div>
-              <div className="space-y-1">
-                <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400">Subject Title</label>
-                <input
-                  type="text"
-                  value={emailModal.subject}
-                  onChange={(e) => setEmailModal({ ...emailModal, subject: e.target.value })}
-                  className="w-full text-xs p-2.5 bg-white border border-[#dedede] rounded-lg outline-none focus:border-black transition-colors font-semibold"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400">Message Context Body</label>
-                <textarea
-                  rows={4}
-                  value={emailModal.body}
-                  onChange={(e) => setEmailModal({ ...emailModal, body: e.target.value })}
-                  className="w-full text-xs p-2.5 bg-white border border-[#dedede] rounded-lg outline-none focus:border-black transition-colors resize-none leading-relaxed"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 border-t border-neutral-100 p-4 bg-neutral-50/50">
-              <button
-                onClick={() => setEmailModal(null)}
-                className="px-4 py-2 border border-[#dedede] bg-white text-neutral-700 hover:bg-neutral-50 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
-              >
-                Dismiss
-              </button>
-              <button
-                onClick={() => {
-                  alert(`Email dispatched successfully to ${emailModal.recipient}!`);
-                  setEmailModal(null);
-                }}
-                className="flex items-center gap-1.5 px-5 py-2 bg-black text-white hover:bg-neutral-800 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
-              >
-                <Send className="size-3.5" />
-                <span>Send Transfer</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Print Document Modal Dialog Overlay */}
-      {printModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-fade-in">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full border border-neutral-200 overflow-hidden">
-            <div className="flex justify-between items-center border-b border-neutral-100 p-4">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-400">
-                Print Preview: {printModal.type.toUpperCase()} Document
-              </span>
-              <button onClick={() => setPrintModal(null)} className="text-neutral-400 hover:text-black">
-                <X className="size-4" />
-              </button>
-            </div>
-            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-              <div className="border border-dashed border-neutral-300 p-5 space-y-4 bg-neutral-50/50 rounded-lg font-mono text-[11px] text-neutral-800 leading-normal">
-                <div className="flex justify-between font-bold text-black border-b border-neutral-200 pb-2">
-                  <span>VENDORBRIDGE ERP SYSTEM</span>
-                  <span>{printModal.type === 'po' ? 'PURCHASE ORDER' : 'INBOUND INVOICE'}</span>
+            ) : emailSendingStep === 'success' ? (
+              <div className="p-8 flex flex-col items-center justify-center gap-3 text-xs">
+                <div className="size-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-2xl font-bold animate-bounce">
+                  ✓
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-[10px]">
-                  <div>
-                    <span className="text-neutral-400 uppercase font-bold block">Document Code:</span>
-                    <span className="text-black font-bold">{printModal.data.id}</span>
+                <p className="font-mono text-emerald-700 font-bold">Email Transmitted Successfully!</p>
+              </div>
+            ) : (
+              <>
+                <div className="p-5 space-y-4 text-xs">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400">Recipient Email Address</label>
+                    <input
+                      type="email"
+                      value={emailModal.recipient}
+                      onChange={(e) => setEmailModal({ ...emailModal, recipient: e.target.value })}
+                      className="w-full text-xs p-2.5 bg-white border border-[#dedede] rounded-lg outline-none focus:border-black transition-colors"
+                    />
                   </div>
-                  <div>
-                    <span className="text-neutral-400 uppercase font-bold block">Filing Date:</span>
-                    <span className="text-black font-bold">{printModal.data.date || new Date().toISOString().split('T')[0]}</span>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400">Subject Title</label>
+                    <input
+                      type="text"
+                      value={emailModal.subject}
+                      onChange={(e) => setEmailModal({ ...emailModal, subject: e.target.value })}
+                      className="w-full text-xs p-2.5 bg-white border border-[#dedede] rounded-lg outline-none focus:border-black transition-colors font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400">Message Context Body</label>
+                    <textarea
+                      rows={4}
+                      value={emailModal.body}
+                      onChange={(e) => setEmailModal({ ...emailModal, body: e.target.value })}
+                      className="w-full text-xs p-2.5 bg-white border border-[#dedede] rounded-lg outline-none focus:border-black transition-colors resize-none leading-relaxed"
+                    />
                   </div>
                 </div>
-                <div className="border-t border-neutral-200 pt-2 text-[10px]">
-                  <span className="text-neutral-400 uppercase font-bold block">Recipient Entity:</span>
-                  <span className="text-black font-bold">{printModal.data.vendor || printModal.data.vendorName}</span>
+                <div className="flex justify-end gap-2 border-t border-neutral-100 p-4 bg-neutral-50/50">
+                  <button
+                    onClick={() => setEmailModal(null)}
+                    className="px-4 py-2 border border-[#dedede] bg-white text-neutral-700 hover:bg-neutral-50 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                  <button
+                    onClick={handleEmailInvoice}
+                    className="flex items-center gap-1.5 px-5 py-2 bg-black text-white hover:bg-neutral-800 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                  >
+                    <Send className="size-3.5" />
+                    <span>Send PDF Invoice</span>
+                  </button>
                 </div>
-                {printModal.type === 'po' ? (
-                  <div className="border-t border-neutral-200 pt-2 space-y-1">
-                    <span className="text-neutral-400 uppercase font-bold text-[10px] block">Details:</span>
-                    <div className="flex justify-between text-black">
-                      <span>{printModal.data.product} (x{printModal.data.qty})</span>
-                      <span className="font-bold">${printModal.data.total.toLocaleString()}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="border-t border-neutral-200 pt-2 space-y-1">
-                    <span className="text-neutral-400 uppercase font-bold text-[10px] block">Details:</span>
-                    <div className="flex justify-between text-black">
-                      <span>Services rendered (PO Ref: {printModal.data.poId})</span>
-                      <span className="font-bold">${printModal.data.amount.toLocaleString()}</span>
-                    </div>
-                  </div>
-                )}
-                <div className="border-t border-neutral-200 pt-2 text-right">
-                  <span className="text-[10px] text-neutral-400 uppercase font-bold mr-2">Grand Total:</span>
-                  <strong className="text-black text-sm font-bold">${(printModal.data.total || printModal.data.amount).toLocaleString()}</strong>
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 border-t border-neutral-100 p-4 bg-neutral-50/50">
-              <button
-                onClick={() => setPrintModal(null)}
-                className="px-4 py-2 border border-[#dedede] bg-white text-neutral-700 hover:bg-neutral-50 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
-              >
-                Dismiss
-              </button>
-              <button
-                onClick={() => {
-                  alert('Document sent to print spool successfully.');
-                  setPrintModal(null);
-                }}
-                className="flex items-center gap-1.5 px-5 py-2 bg-black text-white hover:bg-neutral-800 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
-              >
-                <Printer className="size-3.5" />
-                <span>Confirm Print</span>
-              </button>
-            </div>
+              </>
+            )}
           </div>
         </div>
       )}

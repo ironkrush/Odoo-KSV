@@ -1,0 +1,138 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organization {
+  id             String          @id @default(uuid())
+  name           String
+  users          User[]
+  vendors        Vendor[]
+  rfqs           RFQ[]
+  quotations     Quotation[]
+  purchaseOrders PurchaseOrder[]
+  invoices       Invoice[]
+  activityLogs   ActivityLog[]
+  createdAt      DateTime        @default(now())
+}
+
+model User {
+  id             String        @id @default(uuid())
+  fullName       String
+  email          String        @unique
+  password       String
+  role           String        // "Admin", "Procurement Officer", "Manager / Approver", "Vendor"
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vendorId       String?
+  vendor         Vendor?       @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+}
+
+model Vendor {
+  id             String        @id
+  name           String
+  category       String
+  rating         Float         @default(0.0)
+  status         String        // "Active", "Onboarding", "Inactive"
+  contactEmail   String
+  gstNumber      String?
+  contactPhone   String?
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users          User[]
+  quotations     Quotation[]
+  purchaseOrders PurchaseOrder[]
+  createdAt      DateTime      @default(now())
+}
+
+model RFQ {
+  id              String        @id
+  title           String
+  vendorCategory  String
+  status          String        // "Draft", "Sent", "Received", "Closed"
+  itemsCount      Int
+  description     String?
+  deadline        String?
+  assignedVendors String?       // Comma-separated list of invited vendor names/IDs
+  attachmentUrl   String?
+  organizationId  String
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  quotations      Quotation[]
+  purchaseOrders  PurchaseOrder[]
+  createdAt       DateTime      @default(now())
+}
+
+model Quotation {
+  id               String        @id
+  rfqId            String
+  rfq              RFQ           @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  vendorId         String
+  vendor           Vendor        @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorName       String
+  amount           Float
+  deliveryTimeDays Int
+  status           String        // "Pending Review", "Approved", "Rejected"
+  notes            String?
+  approvalRemarks  String?
+  organizationId   String
+  organization     Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt        DateTime      @default(now())
+}
+
+model PurchaseOrder {
+  id             String        @id
+  rfqId          String
+  rfq            RFQ           @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  vendorId       String
+  vendor         Vendor        @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorName     String
+  product        String
+  qty            Int
+  unitPrice      Float
+  subtotal       Float         @default(0.0)
+  taxAmount      Float         @default(0.0)
+  total          Float         @default(0.0)
+  status         String        // "Delivered", "In Transit", "Pending Approval", "Cancelled"
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoices       Invoice[]
+  createdAt      DateTime      @default(now())
+}
+
+model Invoice {
+  id             String        @id
+  poId           String
+  purchaseOrder  PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  vendorName     String
+  amount         Float
+  subtotal       Float         @default(0.0)
+  taxAmount      Float         @default(0.0)
+  totalAmount    Float         @default(0.0)
+  status         String        // "Paid", "Pending", "Overdue"
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+}
+
+model ActivityLog {
+  id             String        @id @default(uuid())
+  type           String        // "rfq", "quotation", "po", "invoice", "vendor"
+  title          String
+  detail         String?
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
