@@ -1,0 +1,6 @@
+{
+  "name": "Efferd Dashboard",
+  "description": "A dense KPI grid dashboard replicating the Efferd Dashboard 2 experience with interactive charts and logs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
