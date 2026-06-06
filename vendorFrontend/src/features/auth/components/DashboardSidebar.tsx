@@ -10,7 +10,8 @@ import {
   HelpCircle,
   Plus,
   User,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,9 +20,10 @@ interface SidebarProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   currentRole: 'Procurement Officer' | 'Vendor' | 'Manager / Approver' | 'Admin';
+  logout: () => void;
 }
 
-export default function DashboardSidebar({ activeTab, setActiveTab, isOpen, setIsOpen, currentRole }: SidebarProps) {
+export default function DashboardSidebar({ activeTab, setActiveTab, isOpen, setIsOpen, currentRole, logout }: SidebarProps) {
   const menuCategories = [
     {
       title: 'Core Operations',
@@ -176,6 +178,16 @@ ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
               <HelpCircle className="size-4 text-neutral-400" />
               <span>Help Center</span>
+            </button>
+            <button
+              onClick={() => {
+                logout();
+                setIsOpen(false);
+              }}
+              className="flex w-full items-center gap-3 rounded-none px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider transition-colors text-red-600 hover:bg-red-50 hover:text-red-700"
+            >
+              <LogOut className="size-4 text-red-500" />
+              <span>Log Out</span>
             </button>
           </div>
 

@@ -23,8 +23,16 @@ import {
   Printer,
   Download,
   Check,
-  Settings
+  Settings,
+  LogOut
 } from 'lucide-react';
+
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './features/auth/context/AuthContext';
+import { ProtectedRoute } from './features/auth/components/ProtectedRoute';
+import LoginPage from './features/auth/pages/LoginPage';
+import SignupPage from './features/auth/pages/SignupPage';
+import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage';
 
 import DashboardSidebar from './components/DashboardSidebar';
 import Dashboard, { PurchaseOrderRecord } from './components/Dashboard';
@@ -32,7 +40,8 @@ import Rfqcomponents from './components/Rfqcomponents';
 
 import { RFQ, Quotation, Vendor, PurchaseOrder, Invoice, ActivityItem, KPIMetric } from './types';
 
-export default function App() {
+function DashboardMain() {
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
@@ -106,6 +115,16 @@ export default function App() {
   const [printModal, setPrintModal] = useState<{ open: boolean; type: 'po' | 'invoice'; data: any } | null>(null);
 
   const [currentRole, setCurrentRole] = useState<'Procurement Officer' | 'Vendor' | 'Manager / Approver' | 'Admin'>('Procurement Officer');
+
+  useEffect(() => {
+    if (user) {
+      const mappedRole = user.role === 'Manager' ? 'Manager / Approver' : user.role;
+      setCurrentRole(mappedRole as any);
+      if (mappedRole === 'Vendor') setActiveTab('rfqs');
+      else if (mappedRole === 'Manager / Approver') setActiveTab('approvals');
+      else setActiveTab('dashboard');
+    }
+  }, [user]);
 
   const [vQuoteRfq, setVQuoteRfq] = useState('102');
   const [vQuoteAmount, setVQuoteAmount] = useState('');
@@ -250,6 +269,7 @@ export default function App() {
         isOpen={sidebarOpen}
         setIsOpen={setSidebarOpen}
         currentRole={currentRole}
+        logout={logout}
       />
 
       <div
@@ -331,6 +351,14 @@ export default function App() {
               {approvalsCount > 0 && (
                 <span className="absolute top-1 right-1 size-2 rounded-full bg-red-600 animate-ping" />
               )}
+            </button>
+            <button
+              id="header-logout-btn"
+              title="Sign Out"
+              onClick={logout}
+              className="p-1.5 rounded-sm hover:bg-red-50 text-red-600 hover:text-red-700 transition-colors"
+            >
+              <LogOut className="size-4" />
             </button>
             <div
               onClick={() => setActiveTab('profile')}
@@ -1486,5 +1514,28 @@ export default function App() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardMain />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
