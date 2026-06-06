@@ -19,6 +19,7 @@ interface DashboardProps {
   onViewAll: () => void;
   onAddOrder: (newOrder: PurchaseOrderRecord) => void;
   onUpdateStatus: (id: string, newStatus: PurchaseOrderRecord['status']) => void;
+  currentRole: 'Procurement Officer' | 'Vendor' | 'Manager / Approver' | 'Admin';
 }
 
 const dailySpend = [
@@ -49,7 +50,7 @@ function GradientBar(props: any) {
   );
 }
 
-export default function Dashboard({ metrics, orders, onViewAll, onAddOrder, onUpdateStatus }: DashboardProps) {
+export default function Dashboard({ metrics, orders, onViewAll, onAddOrder, onUpdateStatus, currentRole }: DashboardProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -127,11 +128,18 @@ export default function Dashboard({ metrics, orders, onViewAll, onAddOrder, onUp
         </div>
         <div className="relative z-20 flex flex-col items-start justify-center w-full max-w-xl">
           <h2 className="text-3xl font-bold text-black tracking-tight leading-tight">
-            Welcome Shaban Haider
+            Welcome {currentRole === 'Procurement Officer' ? 'Shaban Haider' : currentRole === 'Vendor' ? 'Apex Supplier' : currentRole === 'Manager / Approver' ? 'Sarah Jenkins' : 'Admin User'}
           </h2>
           <p className="text-sm text-neutral-600 mt-2 font-medium">
-            Here is the latest overview of your procurement workspace.
+            Here is the latest overview of your procurement workspace as {currentRole === 'Admin' ? 'an' : 'a'} {currentRole}.
           </p>
+        </div>
+        <div className="absolute right-12 top-1/2 -translate-y-1/2 z-20 hidden md:block">
+          <img
+            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80"
+            alt="User Account Profile"
+            className="size-20 border-2 border-black object-cover rounded-none"
+          />
         </div>
       </div>
 
@@ -149,16 +157,20 @@ export default function Dashboard({ metrics, orders, onViewAll, onAddOrder, onUp
               <div
                 key={metric.title}
                 id={`kpi-card-${metric.title.toLowerCase().replace(/\s+/g, '-')}`}
-                className="flex flex-col bg-white p-8 transition-colors hover:bg-neutral-50/50"
+                className="relative flex flex-col bg-white p-8 transition-colors hover:bg-neutral-50/50 rounded-none"
               >
                 <div className="mb-4">
                   <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">
                     {metric.title}
                   </span>
                 </div>
-                <div className="mb-5">
+                <div className="mb-2">
                   <p className="font-bold text-4xl text-black tracking-tight">{metric.value}</p>
                 </div>
+
+                {/* Horizontal Divider Line going all the way edge-to-edge */}
+                <hr className="border-t border-[#dedede] my-4 -mx-8" />
+
                 <div className="flex items-center gap-1.5 text-[11px]">
                   <span className={`font-bold flex items-center gap-0.5 ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {isPositive ? '▲' : '▼'} {Math.abs(metric.delta)}%
@@ -266,18 +278,20 @@ export default function Dashboard({ metrics, orders, onViewAll, onAddOrder, onUp
                   </div>
                 )}
               </div>
-              <button
-                id="recent-po-create-btn"
-                onClick={() => setShowNewPoForm(!showNewPoForm)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-black hover:bg-neutral-800 text-white rounded text-xs font-semibold transition-colors"
-              >
-                <Plus className="size-3.5" />
-                <span>New PO</span>
-              </button>
+              {currentRole === 'Procurement Officer' && (
+                <button
+                  id="recent-po-create-btn"
+                  onClick={() => setShowNewPoForm(!showNewPoForm)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-black hover:bg-neutral-800 text-white rounded text-xs font-semibold transition-colors"
+                >
+                  <Plus className="size-3.5" />
+                  <span>New PO</span>
+                </button>
+              )}
             </div>
           </div>
 
-          {showNewPoForm && (
+          {currentRole === 'Procurement Officer' && showNewPoForm && (
             <div className="border-b border-[#dedede] bg-neutral-50 p-6 animate-fade-in">
               <form onSubmit={handleSubmitNewPo} className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -351,30 +365,36 @@ export default function Dashboard({ metrics, orders, onViewAll, onAddOrder, onUp
                     <td className="py-4 px-2 text-right font-mono text-xs text-neutral-500">${item.unitPrice.toFixed(2)}</td>
                     <td className="py-4 px-4 text-right font-mono text-sm font-bold text-black">${item.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td className="py-4 px-6 text-center relative">
-                      <button
-                        id={`po-menu-btn-${item.id}`}
-                        onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
-                        className="p-1 rounded hover:bg-[#ededed] text-neutral-400 hover:text-black transition-colors"
-                      >
-                        <MoreHorizontal className="size-4" />
-                      </button>
-                      {activeMenuId === item.id && (
+                      {currentRole === 'Procurement Officer' ? (
                         <>
-                          <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
-                          <div className="absolute right-6 top-10 z-50 w-44 rounded border border-[#dedede] bg-white shadow-lg py-1 text-left text-xs">
-                            <div className="px-3 py-1.5 text-[9px] font-mono uppercase tracking-wider text-neutral-400 border-b border-[#efefef] font-bold">Quick status update</div>
-                            {(['Delivered', 'In Transit', 'Pending Approval', 'Cancelled'] as PurchaseOrderRecord['status'][]).map((st) => (
-                              <button
-                                key={st}
-                                onClick={() => { onUpdateStatus(item.id, st); setActiveMenuId(null); }}
-                                className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-[#f1f1f1] transition-all"
-                              >
-                                <span>Mark {st}</span>
-                                {item.status === st && <Check className="size-3 text-black font-bold" />}
-                              </button>
-                            ))}
-                          </div>
+                          <button
+                            id={`po-menu-btn-${item.id}`}
+                            onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
+                            className="p-1 rounded hover:bg-[#ededed] text-neutral-400 hover:text-black transition-colors"
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </button>
+                          {activeMenuId === item.id && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
+                              <div className="absolute right-6 top-10 z-50 w-44 rounded border border-[#dedede] bg-white shadow-lg py-1 text-left text-xs">
+                                <div className="px-3 py-1.5 text-[9px] font-mono uppercase tracking-wider text-neutral-400 border-b border-[#efefef] font-bold">Quick status update</div>
+                                {(['Delivered', 'In Transit', 'Pending Approval', 'Cancelled'] as PurchaseOrderRecord['status'][]).map((st) => (
+                                  <button
+                                    key={st}
+                                    onClick={() => { onUpdateStatus(item.id, st); setActiveMenuId(null); }}
+                                    className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-[#f1f1f1] transition-all"
+                                  >
+                                    <span>Mark {st}</span>
+                                    {item.status === st && <Check className="size-3 text-black font-bold" />}
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </>
+                      ) : (
+                        <span className="text-[10px] font-mono text-neutral-400">View Only</span>
                       )}
                     </td>
                   </tr>

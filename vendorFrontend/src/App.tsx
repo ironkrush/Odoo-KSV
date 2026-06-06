@@ -19,11 +19,16 @@ import {
   FolderOpen,
   DollarSign,
   Sidebar,
-  LayoutGrid
+  LayoutGrid,
+  Printer,
+  Download,
+  Check,
+  Settings
 } from 'lucide-react';
 
 import DashboardSidebar from './components/DashboardSidebar';
 import Dashboard, { PurchaseOrderRecord } from './components/Dashboard';
+import Rfqcomponents from './components/Rfqcomponents';
 
 import { RFQ, Quotation, Vendor, PurchaseOrder, Invoice, ActivityItem, KPIMetric } from './types';
 
@@ -95,6 +100,23 @@ export default function App() {
   const [invAmount, setInvAmount] = useState('');
   const [invStatus, setInvStatus] = useState<'Paid' | 'Pending' | 'Overdue'>('Pending');
 
+  const [poInvoiceTab, setPoInvoiceTab] = useState<'po' | 'invoices'>('po');
+  const [selectedComparisonRfq, setSelectedComparisonRfq] = useState<string>('102');
+  const [emailModal, setEmailModal] = useState<{ open: boolean; recipient: string; subject: string; body: string } | null>(null);
+  const [printModal, setPrintModal] = useState<{ open: boolean; type: 'po' | 'invoice'; data: any } | null>(null);
+
+  const [currentRole, setCurrentRole] = useState<'Procurement Officer' | 'Vendor' | 'Manager / Approver' | 'Admin'>('Procurement Officer');
+
+  const [vQuoteRfq, setVQuoteRfq] = useState('102');
+  const [vQuoteAmount, setVQuoteAmount] = useState('');
+  const [vQuoteDelivery, setVQuoteDelivery] = useState('7');
+
+  const [showPoFormLedger, setShowPoFormLedger] = useState(false);
+  const [ledgerPoVendor, setLedgerPoVendor] = useState('');
+  const [ledgerPoProduct, setLedgerPoProduct] = useState('');
+  const [ledgerPoQty, setLedgerPoQty] = useState('100');
+  const [ledgerPoPrice, setLedgerPoPrice] = useState('15.00');
+
   useEffect(() => { localStorage.setItem('erp_rfqs', JSON.stringify(rfqs)); }, [rfqs]);
   useEffect(() => { localStorage.setItem('erp_quotations', JSON.stringify(quotations)); }, [quotations]);
   useEffect(() => { localStorage.setItem('erp_recent_pos', JSON.stringify(recentPos)); }, [recentPos]);
@@ -127,6 +149,65 @@ export default function App() {
     setRfqs([newRfq, ...rfqs]);
     setRfqTitle('');
     setShowRfqForm(false);
+  };
+
+  const handlePublishNewRfq = (title: string, category: string, itemsCount: number) => {
+    const newRfq: RFQ = {
+      id: Math.floor(106 + Math.random() * 900).toString(),
+      title,
+      vendorCategory: category,
+      status: 'Sent',
+      date: new Date().toISOString().split('T')[0],
+      itemsCount: itemsCount || 10
+    };
+    setRfqs([newRfq, ...rfqs]);
+    setActiveTab('rfqs');
+  };
+
+  const handleVendorSubmitQuote = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!vQuoteRfq || !vQuoteAmount) return;
+    const amountNum = Number(vQuoteAmount);
+    if (isNaN(amountNum) || amountNum <= 0) return;
+    const newQuote: Quotation = {
+      id: `QT-${Math.floor(816 + Math.random() * 200)}`,
+      rfqId: vQuoteRfq,
+      vendorName: 'Apex Supplier',
+      amount: amountNum,
+      status: 'Pending Review',
+      deliveryTimeDays: Number(vQuoteDelivery) || 7,
+      date: new Date().toISOString().split('T')[0]
+    };
+    setQuotations([newQuote, ...quotations]);
+    alert("Quote submitted to organizational registry successfully!");
+    setVQuoteAmount('');
+    setActiveTab('rfqs');
+  };
+
+  const handleLedgerCreatePo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ledgerPoVendor || !ledgerPoProduct) return;
+    const qtyNum = parseInt(ledgerPoQty, 10);
+    const unitPriceNum = parseFloat(ledgerPoPrice);
+    if (isNaN(qtyNum) || qtyNum <= 0 || isNaN(unitPriceNum) || unitPriceNum < 0) return;
+    const numberString = recentPos.length > 0
+      ? (Math.max(...recentPos.map(o => parseInt(o.id.replace('#PO-', ''), 10))) + 1).toString()
+      : '1005';
+    const newPo = {
+      id: `#PO-${numberString}`,
+      vendor: ledgerPoVendor,
+      product: ledgerPoProduct,
+      status: 'Pending Approval' as const,
+      qty: qtyNum,
+      unitPrice: unitPriceNum,
+      total: qtyNum * unitPriceNum
+    };
+    setRecentPos([newPo, ...recentPos]);
+    setLedgerPoVendor('');
+    setLedgerPoProduct('');
+    setLedgerPoQty('100');
+    setLedgerPoPrice('15.00');
+    setShowPoFormLedger(false);
   };
 
   const handleCreateInvoice = (e: React.FormEvent) => {
@@ -168,6 +249,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         isOpen={sidebarOpen}
         setIsOpen={setSidebarOpen}
+        currentRole={currentRole}
       />
 
       <div
@@ -175,8 +257,10 @@ export default function App() {
         className="relative flex flex-col flex-1 min-w-0 overflow-hidden"
         style={{ backgroundColor: '#ededed' }}
       >
-        <div className="absolute left-0 top-14 -translate-x-1/2 -translate-y-1/2 z-40 text-neutral-400 font-mono text-sm pointer-events-none select-none">
-          +
+        <div className="absolute left-0 top-14 -translate-x-1/2 -translate-y-1/2 z-40 pointer-events-none select-none flex items-center justify-center size-3">
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4.5 0V9M0 4.5H9" stroke="#999" strokeWidth="1"/>
+          </svg>
         </div>
 
         <header
@@ -203,16 +287,36 @@ export default function App() {
               </button>
               <div className="flex items-center gap-2 text-sm font-semibold text-black select-none md:ml-3">
                 <LayoutGrid className="size-4 text-black shrink-0" />
-                <span className="capitalize">{activeTab === 'dashboard' ? 'Dashboard' : activeTab}</span>
+                <span className="capitalize">{activeTab === 'dashboard' ? 'Procurement Hub' : activeTab}</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 border border-[#dedede] px-2.5 py-1 bg-neutral-50">
+              <span className="text-[9px] font-mono font-bold uppercase text-neutral-400">Testing Role:</span>
+              <select
+                value={currentRole}
+                onChange={(e) => {
+                  const val = e.target.value as any;
+                  setCurrentRole(val);
+                  if (val === 'Vendor') setActiveTab('rfqs');
+                  else if (val === 'Manager / Approver') setActiveTab('approvals');
+                  else setActiveTab('dashboard');
+                }}
+                className="text-[11px] font-bold text-black bg-transparent border-none outline-none cursor-pointer"
+              >
+                <option value="Procurement Officer">Procurement Officer</option>
+                <option value="Vendor">Vendor</option>
+                <option value="Manager / Approver">Manager / Approver</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+
             <button
               id="header-shortcut-fly"
               title="Quick Action Link"
-              onClick={() => alert("Action triggered: Share Report Link generated for Shaban.")}
+              onClick={() => alert("Action triggered: Share Report Link generated.")}
               className="p-1.5 rounded-sm hover:bg-[#ededed] text-neutral-800 transition-colors"
             >
               <Send className="size-4" />
@@ -228,7 +332,11 @@ export default function App() {
                 <span className="absolute top-1 right-1 size-2 rounded-full bg-red-600 animate-ping" />
               )}
             </button>
-            <div className="h-7 w-7 rounded-full bg-black flex items-center justify-center p-0.5" title="Logged in as Shaban Haider">
+            <div
+              onClick={() => setActiveTab('profile')}
+              className="h-7 w-7 rounded-full bg-black flex items-center justify-center p-0.5 cursor-pointer hover:scale-105 transition-transform"
+              title="View User Account & Profile"
+            >
               <div className="h-full w-full rounded-full bg-white flex items-center justify-center overflow-hidden">
                 <User className="size-4 text-black shrink-0 relative top-0.5" />
               </div>
@@ -247,9 +355,10 @@ export default function App() {
               <Dashboard
                 metrics={metricsList}
                 orders={recentPos}
-                onViewAll={() => setActiveTab('purchaseorders')}
+                onViewAll={() => setActiveTab('purchaseorders_invoices')}
                 onAddOrder={(newOrder) => setRecentPos([newOrder, ...recentPos])}
                 onUpdateStatus={(id, status) => setRecentPos(prev => prev.map(o => o.id === id ? { ...o, status } : o))}
+                currentRole={currentRole}
               />
             )}
 
@@ -260,14 +369,16 @@ export default function App() {
                     <h2 className="text-xl font-bold tracking-tight">Request for Quotation (RFQs) Registry</h2>
                     <p className="text-xs text-neutral-500 font-mono mt-1">Draft, send, and review incoming requests for materials.</p>
                   </div>
-                  <button
-                    id="new-rfq-drawer-trigger"
-                    onClick={() => setShowRfqForm(!showRfqForm)}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-black text-white hover:bg-neutral-800 rounded font-semibold text-xs uppercase tracking-wider transition-colors"
-                  >
-                    <Plus className="size-3.5" />
-                    <span>Create RFQ Request</span>
-                  </button>
+                  {currentRole === 'Procurement Officer' && (
+                    <button
+                      id="new-rfq-drawer-trigger"
+                      onClick={() => setActiveTab('rfqs_new')}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-black text-white hover:bg-neutral-800 rounded font-semibold text-xs uppercase tracking-wider transition-colors"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Create RFQ Request</span>
+                    </button>
+                  )}
                 </div>
 
                 {showRfqForm && (
@@ -335,6 +446,13 @@ export default function App() {
                   </table>
                 </div>
               </div>
+            )}
+
+            {activeTab === 'rfqs_new' && (
+              <Rfqcomponents
+                onPublish={handlePublishNewRfq}
+                onCancel={() => setActiveTab('rfqs')}
+              />
             )}
 
             {activeTab === 'quotations' && (
@@ -535,130 +653,521 @@ export default function App() {
               </div>
             )}
 
-            {activeTab === 'purchaseorders' && (
-              <div className="bg-white border border-[#dedede] rounded p-6 animate-fade-in space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold tracking-tight text-neutral-900">Purchase Orders (PO) Ledger</h2>
-                  <p className="text-xs text-neutral-500 font-mono mt-1">Legally binding buyer authorization certificates sent to global vendors.</p>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-[#dedede] text-[10px] font-mono uppercase text-neutral-400">
-                        <th className="pb-3 px-2">PO Code</th>
-                        <th className="pb-3 px-2">Vendor Destination</th>
-                        <th className="pb-3 px-2">Product Description</th>
-                        <th className="pb-3 px-2 text-right">Items Qty</th>
-                        <th className="pb-3 px-2 text-right">Unit Rate</th>
-                        <th className="pb-3 px-4 text-right">Commitment Value</th>
-                        <th className="pb-3 text-right pr-2">Tracking</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#efefef] text-sm">
-                      {recentPos.map((po) => (
-                        <tr key={po.id} className="hover:bg-[#fafafa] transition-colors h-14">
-                          <td className="font-mono font-bold text-neutral-500 px-2">{po.id}</td>
-                          <td className="font-bold text-black text-sm px-2">{po.vendor}</td>
-                          <td className="text-neutral-500 text-xs px-2">{po.product}</td>
-                          <td className="text-right font-mono text-neutral-700 px-2">{po.qty.toLocaleString()} units</td>
-                          <td className="text-right font-mono text-neutral-400 px-2">${po.unitPrice.toFixed(2)}</td>
-                          <td className="text-right font-mono font-bold text-black px-4">${po.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                          <td className="text-right pr-2">
-                            <span className={`inline-block px-2.5 py-0.5 rounded border text-[10px] font-mono font-bold uppercase ${po.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                po.status === 'In Transit' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                  po.status === 'Pending Approval' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                    'bg-rose-50 text-rose-700 border-rose-200'
-                              }`}>
-                              {po.status}
-                            </span>
-                          </td>
-                        </tr>
+            {activeTab === 'comparison' && (
+              <div className="bg-white border border-[#dedede] p-6 animate-fade-in space-y-6 shadow-xs rounded-none">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dedede] pb-5">
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight text-neutral-900">Quotation Comparison Hub</h2>
+                    <p className="text-xs text-neutral-500 font-mono mt-1">Side-by-side analysis of incoming vendor bids to determine lowest price.</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-mono font-bold uppercase text-neutral-400">Compare RFQ:</label>
+                    <select
+                      value={selectedComparisonRfq}
+                      onChange={(e) => setSelectedComparisonRfq(e.target.value)}
+                      className="text-xs p-2 bg-white border border-[#dedede] outline-none focus:border-black font-semibold transition-colors cursor-pointer"
+                    >
+                      {rfqs.map(r => (
+                        <option key={r.id} value={r.id}>#{r.id} - {r.title}</option>
                       ))}
-                    </tbody>
-                  </table>
+                    </select>
+                  </div>
                 </div>
+
+                {(() => {
+                  const comparedQuotes = quotations.filter(q => q.rfqId === selectedComparisonRfq);
+                  if (comparedQuotes.length === 0) {
+                    return (
+                      <div className="py-12 border border-dashed border-neutral-300 text-center text-xs font-mono text-neutral-400">
+                        No quotations submitted for this RFQ yet.
+                      </div>
+                    );
+                  }
+
+                  const minAmount = Math.min(...comparedQuotes.map(q => q.amount));
+                  const maxAmount = Math.max(...comparedQuotes.map(q => q.amount));
+                  const avgAmount = comparedQuotes.reduce((acc, q) => acc + q.amount, 0) / comparedQuotes.length;
+                  const fastestLead = Math.min(...comparedQuotes.map(q => q.deliveryTimeDays));
+
+                  return (
+                    <div className="space-y-6">
+                      {/* Bid Insights Summary */}
+                      <div className="grid grid-cols-1 md:grid-cols-4 border border-[#dedede] divide-y md:divide-y-0 md:divide-x divide-[#dedede] bg-neutral-50/50">
+                        <div className="p-4 flex flex-col">
+                          <span className="text-[10px] font-mono font-bold uppercase text-neutral-400">Lowest Quoted Bid</span>
+                          <span className="text-2xl font-mono font-bold text-emerald-700 mt-1">${minAmount.toLocaleString()}</span>
+                          <span className="text-[10px] text-neutral-500 mt-1">Best Cost Advantage</span>
+                        </div>
+                        <div className="p-4 flex flex-col">
+                          <span className="text-[10px] font-mono font-bold uppercase text-neutral-400">Average Quotation</span>
+                          <span className="text-2xl font-mono font-bold text-black mt-1">${Math.round(avgAmount).toLocaleString()}</span>
+                          <span className="text-[10px] text-neutral-500 mt-1">Market Standard Baseline</span>
+                        </div>
+                        <div className="p-4 flex flex-col">
+                          <span className="text-[10px] font-mono font-bold uppercase text-neutral-400">Highest Bid Price</span>
+                          <span className="text-2xl font-mono font-bold text-rose-700 mt-1">${maxAmount.toLocaleString()}</span>
+                          <span className="text-[10px] text-neutral-500 mt-1">Maximum Risk Premium</span>
+                        </div>
+                        <div className="p-4 flex flex-col">
+                          <span className="text-[10px] font-mono font-bold uppercase text-neutral-400">Fastest Delivery</span>
+                          <span className="text-2xl font-mono font-bold text-blue-700 mt-1">{fastestLead} Days</span>
+                          <span className="text-[10px] text-neutral-500 mt-1">Optimal Lead Time Match</span>
+                        </div>
+                      </div>
+
+                      {/* Visual Price Comparison Bars */}
+                      <div className="border border-[#dedede] p-5 space-y-4">
+                        <h3 className="font-bold text-xs uppercase tracking-wider text-black font-mono">Relative Pricing Spectrum</h3>
+                        <div className="space-y-3">
+                          {comparedQuotes.map((q) => {
+                            const isLowest = q.amount === minAmount;
+                            const percentageOfMin = Math.round(((q.amount - minAmount) / minAmount) * 100);
+                            const widthPercent = Math.max(10, Math.min(100, (q.amount / maxAmount) * 100));
+                            return (
+                              <div key={q.id} className="space-y-1">
+                                <div className="flex justify-between items-center text-xs">
+                                  <span className="font-bold text-black flex items-center gap-1.5">
+                                    {q.vendorName}
+                                    {isLowest && <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-[8px] font-bold uppercase tracking-wide">Lowest</span>}
+                                  </span>
+                                  <span className="font-mono text-neutral-600">
+                                    ${q.amount.toLocaleString()} {q.amount > minAmount && <span className="text-rose-600 font-bold">(+{percentageOfMin}%)</span>}
+                                  </span>
+                                </div>
+                                <div className="h-4 bg-neutral-100 relative">
+                                  <div
+                                    className={`h-full transition-all duration-500 ${isLowest ? 'bg-emerald-600' : 'bg-neutral-800'}`}
+                                    style={{ width: `${widthPercent}%` }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Matrix Grid Comparison Table */}
+                      <div className="border border-[#dedede] overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="border-b border-[#dedede] bg-neutral-50 text-[10px] font-mono uppercase text-neutral-500">
+                              <th className="py-3 px-4 font-bold">Supplier Identity</th>
+                              <th className="py-3 px-4 text-center font-bold">Vendor Rating</th>
+                              <th className="py-3 px-4 text-right font-bold">Lead Time</th>
+                              <th className="py-3 px-4 text-right font-bold">Bid Offer</th>
+                              <th className="py-3 px-4 text-center font-bold">Clearance Status</th>
+                              <th className="py-3 px-4 text-right font-bold">Workspace Approvals</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[#efefef] text-xs">
+                            {comparedQuotes.map((q) => {
+                              const isLowest = q.amount === minAmount;
+                              const isFastest = q.deliveryTimeDays === fastestLead;
+                              const ratingVal = vendors.find(v => v.name === q.vendorName)?.rating || '4.5';
+                              return (
+                                <tr key={q.id} className={`hover:bg-neutral-50/50 transition-colors ${isLowest ? 'bg-emerald-50/10' : ''}`}>
+                                  <td className="py-4 px-4">
+                                    <div className="font-bold text-black">{q.vendorName}</div>
+                                    <div className="text-[10px] text-neutral-400 font-mono mt-0.5">Bid Ref: #{q.id}</div>
+                                  </td>
+                                  <td className="py-4 px-4 text-center">
+                                    <div className="inline-flex items-center gap-1 font-bold text-neutral-800">
+                                      <Star className="size-3 fill-black text-black" />
+                                      <span>{ratingVal}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-4 text-right">
+                                    <span className={`font-mono font-bold ${isFastest ? 'text-blue-700' : 'text-neutral-600'}`}>
+                                      {q.deliveryTimeDays} working days
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-4 text-right font-mono font-bold text-black">
+                                    <span className={isLowest ? 'text-emerald-700 font-extrabold' : ''}>
+                                      ${q.amount.toLocaleString()}
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-4 text-center">
+                                    <span className={`inline-block px-2 py-0.5 rounded border text-[9px] uppercase font-bold ${
+                                      q.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
+                                      q.status === 'Rejected' ? 'bg-rose-50 text-rose-700 border-rose-300' :
+                                      'bg-amber-50 text-amber-700 border-amber-300'
+                                    }`}>
+                                      {q.status}
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-4 text-right">
+                                    {q.status === 'Pending Review' ? (
+                                      <div className="inline-flex gap-1.5 justify-end">
+                                        <button
+                                          id={`accept-comparison-${q.id}`}
+                                          onClick={() => handleApproveQuotation(q.id)}
+                                          className="px-2.5 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded hover:bg-neutral-800 transition-colors cursor-pointer"
+                                        >
+                                          Accept Bid
+                                        </button>
+                                        <button
+                                          onClick={() => handleRejectQuotation(q.id)}
+                                          className="px-2.5 py-1 border border-[#ced4da] rounded text-[10px] font-bold uppercase tracking-wider hover:border-black transition-colors cursor-pointer"
+                                        >
+                                          Decline
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <span className="font-mono text-[10px] text-neutral-400">Processed</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
-            {activeTab === 'invoices' && (
-              <div className="bg-white border border-[#dedede] rounded p-6 animate-fade-in space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {activeTab === 'purchaseorders_invoices' && (
+              <div className="bg-white border border-[#dedede] rounded-xl p-6 animate-fade-in space-y-6 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dedede] pb-4">
                   <div>
-                    <h2 className="text-xl font-bold tracking-tight">Vendor Invoices Ledger</h2>
-                    <p className="text-xs text-neutral-500 font-mono mt-1">Payment requests matched back to Purchase Orders.</p>
+                    <h2 className="text-xl font-bold tracking-tight text-neutral-900">Purchase Orders & Invoices Ledger</h2>
+                    <p className="text-xs text-neutral-500 font-mono mt-1">Review, generate, print, and email official procurement files.</p>
                   </div>
-                  <button id="new-invoice-form-trigger" onClick={() => setShowInvoiceForm(!showInvoiceForm)} className="flex items-center gap-1.5 px-4 py-2 bg-black text-white hover:bg-neutral-800 rounded font-semibold text-xs uppercase tracking-wider transition-colors">
-                    <Plus className="size-3.5" />
-                    <span>Upload Vendor Invoice</span>
-                  </button>
+                  {/* Tab Selector (Hidden for Vendors who only see POs) */}
+                  {currentRole !== 'Vendor' && (
+                    <div className="inline-flex rounded-lg border border-[#dedede] p-1 bg-neutral-50 shrink-0">
+                      <button
+                        onClick={() => setPoInvoiceTab('po')}
+                        className={`px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
+                          poInvoiceTab === 'po' ? 'bg-black text-white' : 'text-neutral-600 hover:text-black'
+                        }`}
+                      >
+                        Purchase Orders
+                      </button>
+                      <button
+                        onClick={() => setPoInvoiceTab('invoices')}
+                        className={`px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
+                          poInvoiceTab === 'invoices' ? 'bg-black text-white' : 'text-neutral-600 hover:text-black'
+                        }`}
+                      >
+                        Invoices
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {showInvoiceForm && (
-                  <form onSubmit={handleCreateInvoice} className="p-4 border border-black rounded bg-[#fafafa] space-y-4 animate-fade-in">
-                    <h3 className="font-bold text-xs uppercase tracking-wider text-black">Inbound Vendor Invoice Parameters</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Select Purchase Order (PO)</label>
-                        <select value={invPoId} onChange={(e) => setInvPoId(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded outline-none font-mono">
-                          {recentPos.map(p => (<option key={p.id} value={p.id}>{p.id} (${p.total.toLocaleString()})</option>))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Vendor Entity</label>
-                        <select value={invVendor} onChange={(e) => setInvVendor(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded outline-none font-semibold">
-                          {vendors.map(v => (<option key={v.id} value={v.name}>{v.name}</option>))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Invoice Dollar value</label>
-                        <input type="text" required value={invAmount} onChange={(e) => setInvAmount(e.target.value)} placeholder="e.g. 145000" className="w-full text-xs p-2 bg-white border border-[#dedede] rounded outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Accounting Status</label>
-                        <select value={invStatus} onChange={(e) => setInvStatus(e.target.value as any)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded outline-none font-semibold">
-                          <option value="Pending">Pending</option>
-                          <option value="Paid">Paid</option>
-                          <option value="Overdue">Overdue</option>
-                        </select>
-                      </div>
+
+                {(poInvoiceTab === 'po' || currentRole === 'Vendor') ? (
+                  <div className="space-y-4">
+                    {/* New PO Header row with Create PO button */}
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-bold text-xs uppercase tracking-wider text-black">Purchase Orders</h3>
+                      {currentRole === 'Procurement Officer' && (
+                        <button
+                          onClick={() => setShowPoFormLedger(!showPoFormLedger)}
+                          className="flex items-center gap-1 px-3 py-1.5 border border-[#dedede] hover:border-black rounded-lg text-xs font-semibold bg-white text-neutral-700 hover:text-black transition-colors"
+                        >
+                          <Plus className="size-3.5" />
+                          <span>Generate PO</span>
+                        </button>
+                      )}
                     </div>
-                    <div className="flex justify-end gap-2 text-xs font-semibold">
-                      <button type="button" onClick={() => setShowInvoiceForm(false)} className="px-3 py-1.5 border border-[#ced4da] rounded text-neutral-600 bg-white">Dismiss</button>
-                      <button type="submit" className="px-4 py-1.5 bg-black text-white rounded hover:bg-neutral-800">Record Invoice</button>
+
+                    {showPoFormLedger && (
+                      <form onSubmit={handleLedgerCreatePo} className="p-4 border border-black rounded-xl bg-neutral-50 space-y-4 animate-fade-in">
+                        <h3 className="font-bold text-xs uppercase tracking-wider text-black">New Procurement Purchase Order Parameters</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Vendor/Supplier</label>
+                            <input type="text" required placeholder="e.g. Apex Steel Ltd" value={ledgerPoVendor} onChange={(e) => setLedgerPoVendor(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Product Description</label>
+                            <input type="text" required placeholder="e.g. Grade 5 Titanium Rods" value={ledgerPoProduct} onChange={(e) => setLedgerPoProduct(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Quantity</label>
+                            <input type="number" required value={ledgerPoQty} onChange={(e) => setLedgerPoQty(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none font-mono font-bold" />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Unit Price ($)</label>
+                            <input type="text" required value={ledgerPoPrice} onChange={(e) => setLedgerPoPrice(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none font-mono font-bold" />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2 text-xs font-semibold">
+                          <button type="button" onClick={() => setShowPoFormLedger(false)} className="px-3 py-1.5 border border-[#ced4da] rounded-lg text-neutral-600 bg-white">Dismiss</button>
+                          <button type="submit" className="px-4 py-1.5 bg-black text-white rounded-lg hover:bg-neutral-800">Generate PO File</button>
+                        </div>
+                      </form>
+                    )}
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-[#dedede] text-[10px] font-mono uppercase text-neutral-400">
+                            <th className="pb-3 px-2">PO Code</th>
+                            <th className="pb-3 px-2">Vendor Destination</th>
+                            <th className="pb-3 px-2">Product Description</th>
+                            <th className="pb-3 px-2 text-right">Items Qty</th>
+                            <th className="pb-3 px-4 text-right">Commitment Value</th>
+                            <th className="pb-3 text-right">Tracking</th>
+                            <th className="pb-3 text-center pr-2">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#efefef] text-xs">
+                          {recentPos.map((po) => (
+                            <tr key={po.id} className="hover:bg-[#fafafa] transition-colors h-14">
+                              <td className="font-mono font-bold text-neutral-500 px-2">{po.id}</td>
+                              <td className="font-bold text-black text-sm px-2">{po.vendor}</td>
+                              <td className="text-neutral-500 text-xs px-2">{po.product}</td>
+                              <td className="text-right font-mono text-neutral-700 px-2">{po.qty.toLocaleString()} units</td>
+                              <td className="text-right font-mono font-bold text-black px-4">${po.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                              <td>
+                                <span className={`inline-block px-2 py-0.5 rounded border text-[9px] font-mono font-bold uppercase ${
+                                  po.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                  po.status === 'In Transit' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                  po.status === 'Pending Approval' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                  'bg-rose-50 text-rose-700 border-rose-200'
+                                }`}>
+                                  {po.status}
+                                </span>
+                              </td>
+                              <td className="text-right pr-2">
+                                {currentRole === 'Procurement Officer' ? (
+                                  <div className="inline-flex items-center gap-1.5 justify-end">
+                                    <button
+                                      onClick={() => setPrintModal({ open: true, type: 'po', data: po })}
+                                      className="p-1.5 rounded hover:bg-neutral-100 text-neutral-600 hover:text-black transition-colors border border-neutral-200"
+                                      title="Print Document"
+                                    >
+                                      <Printer className="size-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => setEmailModal({ open: true, recipient: 'vendor@gmail.com', subject: `Purchase Order ${po.id}`, body: `Please find attached Purchase Order ${po.id} for ${po.product}.` })}
+                                      className="p-1.5 rounded hover:bg-neutral-100 text-neutral-600 hover:text-black transition-colors border border-neutral-200"
+                                      title="Email Document"
+                                    >
+                                      <Mail className="size-3.5" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] font-mono text-neutral-400">View Only</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                  </form>
-                )}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-[#dedede] text-[10px] font-mono uppercase text-neutral-400">
-                        <th className="pb-3">Invoice Code</th>
-                        <th className="pb-3">Matched PO</th>
-                        <th className="pb-3">Vendor Business</th>
-                        <th className="pb-3 text-right">Invoiced Amount</th>
-                        <th className="pb-3 text-right">Filing Date</th>
-                        <th className="pb-3 text-right">Payment Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#efefef] text-sm">
-                      {invoices.map((inv) => (
-                        <tr key={inv.id} className="hover:bg-[#fafafa] transition-colors h-14">
-                          <td className="font-mono font-bold text-black">{inv.id}</td>
-                          <td className="font-mono text-neutral-400">{inv.poId}</td>
-                          <td className="font-bold text-black text-sm">{inv.vendorName}</td>
-                          <td className="text-right font-mono font-bold text-black">${inv.amount.toLocaleString()}</td>
-                          <td className="text-right font-mono text-neutral-500">{inv.date}</td>
-                          <td className="text-right">
-                            <span className={`inline-block px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${inv.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
-                                inv.status === 'Overdue' ? 'bg-rose-50 text-rose-700 border-rose-300 animate-pulse' :
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-bold text-xs uppercase tracking-wider text-black">Recorded Invoices</h3>
+                      {currentRole === 'Procurement Officer' && (
+                        <button
+                          onClick={() => setShowInvoiceForm(!showInvoiceForm)}
+                          className="flex items-center gap-1 px-3 py-1.5 border border-[#dedede] hover:border-black rounded-lg text-xs font-semibold bg-white text-neutral-700 hover:text-black transition-colors"
+                        >
+                          <Plus className="size-3.5" />
+                          <span>Upload Invoice</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {showInvoiceForm && (
+                      <form onSubmit={handleCreateInvoice} className="p-4 border border-black rounded-xl bg-neutral-50 space-y-4 animate-fade-in">
+                        <h3 className="font-bold text-xs uppercase tracking-wider text-black">Inbound Vendor Invoice Parameters</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Select Purchase Order (PO)</label>
+                            <select value={invPoId} onChange={(e) => setInvPoId(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none font-mono">
+                              {recentPos.map(p => (<option key={p.id} value={p.id}>{p.id} (${p.total.toLocaleString()})</option>))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Vendor Entity</label>
+                            <select value={invVendor} onChange={(e) => setInvVendor(e.target.value)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none font-semibold">
+                              {vendors.map(v => (<option key={v.id} value={v.name}>{v.name}</option>))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Invoice Dollar value</label>
+                            <input type="text" required value={invAmount} onChange={(e) => setInvAmount(e.target.value)} placeholder="e.g. 145000" className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none" />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono font-bold uppercase text-neutral-500 mb-1">Accounting Status</label>
+                            <select value={invStatus} onChange={(e) => setInvStatus(e.target.value as any)} className="w-full text-xs p-2 bg-white border border-[#dedede] rounded-lg outline-none font-semibold">
+                              <option value="Pending">Pending</option>
+                              <option value="Paid">Paid</option>
+                              <option value="Overdue">Overdue</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2 text-xs font-semibold">
+                          <button type="button" onClick={() => setShowInvoiceForm(false)} className="px-3 py-1.5 border border-[#ced4da] rounded-lg text-neutral-600 bg-white">Dismiss</button>
+                          <button type="submit" className="px-4 py-1.5 bg-black text-white rounded-lg hover:bg-neutral-800">Record Invoice</button>
+                        </div>
+                      </form>
+                    )}
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-[#dedede] text-[10px] font-mono uppercase text-neutral-400">
+                            <th className="pb-3 px-2">Invoice Code</th>
+                            <th className="pb-3 px-2">Matched PO</th>
+                            <th className="pb-3 px-2">Vendor Business</th>
+                            <th className="pb-3 px-2 text-right">Invoiced Amount</th>
+                            <th className="pb-3 px-2 text-right">Filing Date</th>
+                            <th className="pb-3 text-right">Payment Status</th>
+                            <th className="pb-3 text-center pr-2">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#efefef] text-sm">
+                          {invoices.map((inv) => (
+                            <tr key={inv.id} className="hover:bg-[#fafafa] transition-colors h-14">
+                              <td className="font-mono font-bold text-black px-2">{inv.id}</td>
+                              <td className="font-mono text-neutral-400 px-2">{inv.poId}</td>
+                              <td className="font-bold text-black text-sm px-2">{inv.vendorName}</td>
+                              <td className="text-right font-mono font-bold text-black px-2">${inv.amount.toLocaleString()}</td>
+                              <td className="text-right font-mono text-neutral-500 px-2">{inv.date}</td>
+                              <td>
+                                <span className={`inline-block px-2.5 py-0.5 rounded border text-[9px] uppercase font-bold ${
+                                  inv.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
+                                  inv.status === 'Overdue' ? 'bg-rose-50 text-rose-700 border-rose-300' :
                                   'bg-amber-100 text-amber-800 border-amber-300'
-                              }`}>
-                              {inv.status}
-                            </span>
-                          </td>
-                        </tr>
+                                }`}>
+                                  {inv.status}
+                                </span>
+                              </td>
+                              <td className="text-right pr-2">
+                                {currentRole === 'Procurement Officer' ? (
+                                  <div className="inline-flex items-center gap-1.5 justify-end">
+                                    <button
+                                      onClick={() => setPrintModal({ open: true, type: 'invoice', data: inv })}
+                                      className="p-1.5 rounded hover:bg-neutral-100 text-neutral-600 hover:text-black transition-colors border border-neutral-200"
+                                      title="Print Document"
+                                    >
+                                      <Printer className="size-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => setEmailModal({ open: true, recipient: 'vendor@gmail.com', subject: `Invoice ${inv.id}`, body: `Please find attached Invoice ${inv.id} matching purchase order ${inv.poId}.` })}
+                                      className="p-1.5 rounded hover:bg-neutral-100 text-neutral-600 hover:text-black transition-colors border border-neutral-200"
+                                      title="Email Document"
+                                    >
+                                      <Mail className="size-3.5" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] font-mono text-neutral-400">View Only</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'vendor_submit_quote' && (
+              <div className="bg-white border border-[#dedede] rounded-xl p-6 animate-fade-in space-y-6 shadow-sm">
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight text-neutral-900">Submit Quote Proposal</h2>
+                  <p className="text-xs text-neutral-500 font-mono mt-1">Submit quotation bid details in response to an active organization RFQ.</p>
+                </div>
+
+                <form onSubmit={handleVendorSubmitQuote} className="space-y-4 max-w-xl">
+                  <div>
+                    <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1.5">Select Target RFQ</label>
+                    <select
+                      value={vQuoteRfq}
+                      onChange={(e) => setVQuoteRfq(e.target.value)}
+                      className="w-full text-xs p-3 bg-white border border-[#dedede] outline-none focus:border-black font-semibold"
+                    >
+                      {rfqs.map(r => (
+                        <option key={r.id} value={r.id}>#{r.id} - {r.title} ({r.vendorCategory})</option>
                       ))}
-                    </tbody>
-                  </table>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1.5">Supplier Name</label>
+                    <input
+                      type="text"
+                      disabled
+                      value="Apex Supplier"
+                      className="w-full text-xs p-3 bg-neutral-100 border border-[#dedede] outline-none font-bold text-neutral-500 cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1.5">Quoted price ($)</label>
+                      <input
+                        type="number"
+                        required
+                        value={vQuoteAmount}
+                        onChange={(e) => setVQuoteAmount(e.target.value)}
+                        placeholder="e.g. 12500"
+                        className="w-full text-xs p-3 bg-white border border-[#dedede] outline-none focus:border-black font-mono font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1.5">Delivery Lead Time (Days)</label>
+                      <input
+                        type="number"
+                        required
+                        value={vQuoteDelivery}
+                        onChange={(e) => setVQuoteDelivery(e.target.value)}
+                        className="w-full text-xs p-3 bg-white border border-[#dedede] outline-none focus:border-black font-mono font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      className="px-5 py-2 bg-black hover:bg-neutral-800 text-white rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
+                    >
+                      Submit Quote Proposal
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className="bg-white border border-[#dedede] rounded-xl p-6 animate-fade-in space-y-6 shadow-sm">
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight">System & Account Settings</h2>
+                  <p className="text-xs text-neutral-500 font-mono mt-1">Configure ERP configurations, workflows, and role-based access parameters.</p>
+                </div>
+                <div className="border border-neutral-200 rounded-xl divide-y divide-neutral-100 text-xs">
+                  <div className="p-4 flex justify-between items-center">
+                    <div>
+                      <p className="font-bold text-black">Role-Based Approvals</p>
+                      <p className="text-neutral-500">Require supervisor signatures for purchases exceeding $10,000.</p>
+                    </div>
+                    <input type="checkbox" defaultChecked className="accent-black" />
+                  </div>
+                  <div className="p-4 flex justify-between items-center">
+                    <div>
+                      <p className="font-bold text-black">Automatic Sourcing Matches</p>
+                      <p className="text-neutral-500">Allow AI Smart Sourcing to auto-tag preferred vendors on RFQ publication.</p>
+                    </div>
+                    <input type="checkbox" defaultChecked className="accent-black" />
+                  </div>
+                  <div className="p-4 flex justify-between items-center">
+                    <div>
+                      <p className="font-bold text-black">Email Copy on Publish</p>
+                      <p className="text-neutral-500">Send an automated copy of newly published RFQs to matched suppliers.</p>
+                    </div>
+                    <input type="checkbox" className="accent-black" />
+                  </div>
                 </div>
               </div>
             )}
@@ -717,6 +1226,103 @@ export default function App() {
               </div>
             )}
 
+            {activeTab === 'profile' && (
+              <div className="bg-white border border-[#dedede] p-0 animate-fade-in space-y-0 shadow-xs rounded-none overflow-hidden">
+                {/* Hero Workspace Banner from Unsplash */}
+                <div className="h-48 w-full relative">
+                  <img
+                    src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80"
+                    alt="Corporate Workspace Hero"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/45" />
+                  <div className="absolute bottom-6 left-6 flex items-end gap-4">
+                    <img
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80"
+                      alt="User Avatar"
+                      className="size-20 border-2 border-white object-cover"
+                    />
+                    <div className="mb-1 text-white">
+                      <h2 className="text-xl font-bold">{currentRole === 'Procurement Officer' ? 'Shaban Haider' : currentRole === 'Vendor' ? 'Apex Supplier' : currentRole === 'Manager / Approver' ? 'Sarah Jenkins' : 'Admin User'}</h2>
+                      <p className="text-xs text-neutral-300 font-mono font-medium">{currentRole} • Enterprise Sourcing</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h3 className="text-base font-bold text-black uppercase tracking-wider font-mono">Profile Details</h3>
+                    <p className="text-xs text-neutral-500 font-mono mt-0.5">Primary user details matching role configurations.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1">Full Name</label>
+                        <input
+                          type="text"
+                          disabled
+                          value={currentRole === 'Procurement Officer' ? 'Shaban Haider' : currentRole === 'Vendor' ? 'Apex Supplier' : currentRole === 'Manager / Approver' ? 'Sarah Jenkins' : 'Admin User'}
+                          className="w-full p-2.5 bg-neutral-50 border border-[#dedede] text-neutral-600 font-bold outline-none cursor-not-allowed"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1">Email Coordinates</label>
+                        <input
+                          type="text"
+                          disabled
+                          value={currentRole === 'Procurement Officer' ? 'shaban@vendorbridge.com' : currentRole === 'Vendor' ? 'supplier@apex.com' : currentRole === 'Manager / Approver' ? 'sarah@vendorbridge.com' : 'admin@vendorbridge.com'}
+                          className="w-full p-2.5 bg-neutral-50 border border-[#dedede] text-neutral-600 font-mono outline-none cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1">Functional Department</label>
+                        <input
+                          type="text"
+                          disabled
+                          value={currentRole === 'Procurement Officer' ? 'Global Supply Sourcing' : currentRole === 'Vendor' ? 'Industrial Logistics' : currentRole === 'Manager / Approver' ? 'Executive Oversight' : 'System Administration'}
+                          className="w-full p-2.5 bg-neutral-50 border border-[#dedede] text-neutral-600 font-bold outline-none cursor-not-allowed"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400 mb-1">Assigned Security Permissions</label>
+                        <div className="p-2.5 border border-[#dedede] bg-neutral-50 font-mono text-[10px] text-neutral-500 uppercase tracking-tight font-bold">
+                          {currentRole === 'Procurement Officer' ? 'CREATE_RFQ, GENERATE_PO, COMPARE_BIDS, RECORD_INVOICES' :
+                           currentRole === 'Vendor' ? 'SUBMIT_BIDS, TRACK_RFQ, READ_PO' :
+                           currentRole === 'Manager / Approver' ? 'APPROVE_QUOTES, DECLINE_QUOTES, AUDIT_WORKFLOWS' :
+                           'MANAGE_SYSTEM, VIEW_ANALYTICS, ALL_OPERATIONS'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Access Credentials & Tokens */}
+                  <div className="border-t border-[#dedede] pt-6 space-y-4">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-black font-mono">System Access Credentials</h4>
+                      <p className="text-xs text-neutral-500 font-mono mt-0.5">Manage tokenized API keys for procurement integrations.</p>
+                    </div>
+
+                    <div className="p-4 border border-[#dedede] bg-neutral-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <span className="text-[10px] font-mono font-bold uppercase text-neutral-400 block">Security API Access Token</span>
+                        <code className="text-xs font-bold font-mono text-neutral-800 mt-1 block">••••••••••••••••••••••••vb_sec_live_9f2a71</code>
+                      </div>
+                      <button
+                        onClick={() => alert("Simulated: Re-generating API token details...")}
+                        className="px-4 py-2 bg-black hover:bg-neutral-800 text-white text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      >
+                        Reset Access Token
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'help' && (
               <div className="bg-white border border-[#dedede] rounded p-6 animate-fade-in space-y-6">
                 <div>
@@ -739,6 +1345,146 @@ export default function App() {
           </div>
         </main>
       </div>
+
+      {/* Email Modal Dialog Overlay */}
+      {emailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-fade-in">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full border border-neutral-200 overflow-hidden">
+            <div className="flex justify-between items-center border-b border-neutral-100 p-4">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-400">
+                Email Document Transfer
+              </span>
+              <button onClick={() => setEmailModal(null)} className="text-neutral-400 hover:text-black">
+                <X className="size-4" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400">Recipient Email Address</label>
+                <input
+                  type="email"
+                  value={emailModal.recipient}
+                  onChange={(e) => setEmailModal({ ...emailModal, recipient: e.target.value })}
+                  className="w-full text-xs p-2.5 bg-white border border-[#dedede] rounded-lg outline-none focus:border-black transition-colors"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400">Subject Title</label>
+                <input
+                  type="text"
+                  value={emailModal.subject}
+                  onChange={(e) => setEmailModal({ ...emailModal, subject: e.target.value })}
+                  className="w-full text-xs p-2.5 bg-white border border-[#dedede] rounded-lg outline-none focus:border-black transition-colors font-semibold"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-[10px] font-mono font-bold uppercase text-neutral-400">Message Context Body</label>
+                <textarea
+                  rows={4}
+                  value={emailModal.body}
+                  onChange={(e) => setEmailModal({ ...emailModal, body: e.target.value })}
+                  className="w-full text-xs p-2.5 bg-white border border-[#dedede] rounded-lg outline-none focus:border-black transition-colors resize-none leading-relaxed"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-neutral-100 p-4 bg-neutral-50/50">
+              <button
+                onClick={() => setEmailModal(null)}
+                className="px-4 py-2 border border-[#dedede] bg-white text-neutral-700 hover:bg-neutral-50 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
+              >
+                Dismiss
+              </button>
+              <button
+                onClick={() => {
+                  alert(`Email dispatched successfully to ${emailModal.recipient}!`);
+                  setEmailModal(null);
+                }}
+                className="flex items-center gap-1.5 px-5 py-2 bg-black text-white hover:bg-neutral-800 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
+              >
+                <Send className="size-3.5" />
+                <span>Send Transfer</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Print Document Modal Dialog Overlay */}
+      {printModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-fade-in">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full border border-neutral-200 overflow-hidden">
+            <div className="flex justify-between items-center border-b border-neutral-100 p-4">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-400">
+                Print Preview: {printModal.type.toUpperCase()} Document
+              </span>
+              <button onClick={() => setPrintModal(null)} className="text-neutral-400 hover:text-black">
+                <X className="size-4" />
+              </button>
+            </div>
+            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+              <div className="border border-dashed border-neutral-300 p-5 space-y-4 bg-neutral-50/50 rounded-lg font-mono text-[11px] text-neutral-800 leading-normal">
+                <div className="flex justify-between font-bold text-black border-b border-neutral-200 pb-2">
+                  <span>VENDORBRIDGE ERP SYSTEM</span>
+                  <span>{printModal.type === 'po' ? 'PURCHASE ORDER' : 'INBOUND INVOICE'}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                  <div>
+                    <span className="text-neutral-400 uppercase font-bold block">Document Code:</span>
+                    <span className="text-black font-bold">{printModal.data.id}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400 uppercase font-bold block">Filing Date:</span>
+                    <span className="text-black font-bold">{printModal.data.date || new Date().toISOString().split('T')[0]}</span>
+                  </div>
+                </div>
+                <div className="border-t border-neutral-200 pt-2 text-[10px]">
+                  <span className="text-neutral-400 uppercase font-bold block">Recipient Entity:</span>
+                  <span className="text-black font-bold">{printModal.data.vendor || printModal.data.vendorName}</span>
+                </div>
+                {printModal.type === 'po' ? (
+                  <div className="border-t border-neutral-200 pt-2 space-y-1">
+                    <span className="text-neutral-400 uppercase font-bold text-[10px] block">Details:</span>
+                    <div className="flex justify-between text-black">
+                      <span>{printModal.data.product} (x{printModal.data.qty})</span>
+                      <span className="font-bold">${printModal.data.total.toLocaleString()}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-t border-neutral-200 pt-2 space-y-1">
+                    <span className="text-neutral-400 uppercase font-bold text-[10px] block">Details:</span>
+                    <div className="flex justify-between text-black">
+                      <span>Services rendered (PO Ref: {printModal.data.poId})</span>
+                      <span className="font-bold">${printModal.data.amount.toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
+                <div className="border-t border-neutral-200 pt-2 text-right">
+                  <span className="text-[10px] text-neutral-400 uppercase font-bold mr-2">Grand Total:</span>
+                  <strong className="text-black text-sm font-bold">${(printModal.data.total || printModal.data.amount).toLocaleString()}</strong>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-neutral-100 p-4 bg-neutral-50/50">
+              <button
+                onClick={() => setPrintModal(null)}
+                className="px-4 py-2 border border-[#dedede] bg-white text-neutral-700 hover:bg-neutral-50 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
+              >
+                Dismiss
+              </button>
+              <button
+                onClick={() => {
+                  alert('Document sent to print spool successfully.');
+                  setPrintModal(null);
+                }}
+                className="flex items-center gap-1.5 px-5 py-2 bg-black text-white hover:bg-neutral-800 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors"
+              >
+                <Printer className="size-3.5" />
+                <span>Confirm Print</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

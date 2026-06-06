@@ -47,3 +47,21 @@
 .nav-indicator.active::after {
   width: 100%;
 }
+
+/* Force flat, sharp corners across the entire application */
+* {
+  border-radius: 0px !important;
+}
+
+/* Force cursor pointer on interactive elements globally */
+button,
+select,
+a,
+input[type="submit"],
+input[type="button"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"],
+[role="button"] {
+  cursor: pointer !important;
+}
