@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seeding with extended metadata...');
+  console.log('🌱 Starting database seeding with approval chain roles...');
 
   // 1. Clean existing tables
   await prisma.auditLog.deleteMany({});
@@ -89,11 +89,26 @@ async function main() {
     },
   });
 
-  console.log('🏢 Created mock Vendor profiles with address, bank, and rating details.');
+  console.log('🏢 Created mock Vendor profiles.');
 
-  // 3. Create Users with extra fields
+  // 3. Create Users with approval chain designations
   const passwordHash = await bcrypt.hash('password123', 10);
 
+  // Admin User
+  await prisma.user.create({
+    data: {
+      email: 'admin@vendorbridge.com',
+      name: 'System Admin',
+      passwordHash,
+      role: 'ADMIN',
+      phone: '9900112233',
+      department: 'IT Administration',
+      designation: 'SysAdmin Manager',
+      approvalLimit: 9999999.0,
+    },
+  });
+
+  // Sarah Procurement (PROCUREMENT_OFFICER)
   const officer = await prisma.user.create({
     data: {
       email: 'officer@vendorbridge.com',
@@ -107,28 +122,30 @@ async function main() {
     },
   });
 
-  const approver1 = await prisma.user.create({
+  // Rahul Mehta (PROCUREMENT_HEAD)
+  await prisma.user.create({
     data: {
-      email: 'approver1@vendorbridge.com',
-      name: 'John Reviewer L1',
+      email: 'head@vendorbridge.com',
+      name: 'Rahul Mehta',
       passwordHash,
-      role: 'APPROVER_L1',
+      role: 'PROCUREMENT_HEAD',
       phone: '9898056789',
-      department: 'Finance and Operations',
-      designation: 'Financial Reviewer L1',
-      approvalLimit: 150000.0,
+      department: 'Procurement Management',
+      designation: 'Procurement Head',
+      approvalLimit: 250000.0,
     },
   });
 
-  const approver2 = await prisma.user.create({
+  // Priya Shah (FINANCE_MANAGER)
+  await prisma.user.create({
     data: {
-      email: 'approver2@vendorbridge.com',
-      name: 'Priya Manager L2',
+      email: 'finance@vendorbridge.com',
+      name: 'Priya Shah',
       passwordHash,
-      role: 'APPROVER_L2',
+      role: 'FINANCE_MANAGER',
       phone: '9898098765',
-      department: 'Executive Administration',
-      designation: 'VP of Operations L2',
+      department: 'Finance and Accounts',
+      designation: 'Finance Manager',
       approvalLimit: 1000000.0,
     },
   });
@@ -160,7 +177,7 @@ async function main() {
     },
   });
 
-  console.log('👤 Created User profiles with phone, department, designation, and approvalLimit details.');
+  console.log('👤 Created User profiles matching Rahul Mehta (Head), Priya Shah (Finance Manager), Sarah, and Vendors.');
 
   // 4. Create a baseline RFQ
   const deadline = new Date();
@@ -168,10 +185,10 @@ async function main() {
 
   const rfq = await prisma.rFQ.create({
     data: {
-      title: 'Office Furniture procurement Q2',
+      title: 'office furniture Q2',
       category: 'Furniture',
       deadline,
-      description: 'Request for ergonomic chairs and standing desks for the Ahmedabad regional office.',
+      description: 'Request for ergonomic chairs and standing desks for Ahmedabad office.',
       status: 'PUBLISHED',
       createdById: officer.id,
       items: {
@@ -196,7 +213,7 @@ async function main() {
     data: {
       action: 'SYSTEM_SEED',
       userId: officer.id,
-      details: 'Extended system seeding completed with mock user, vendor, and RFQ records.',
+      details: 'Baseline database seeding completed with core roles and active RFQ.',
     },
   });
 

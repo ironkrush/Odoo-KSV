@@ -4,135 +4,194 @@ import prisma from './config/db.js';
 const PORT = 3001;
 
 async function runTests() {
-  console.log('🤖 Running advanced role-based verification tests...');
+  console.log('🤖 Running advanced business logic & approval chain verification tests...');
 
   const server = app.listen(PORT, () => {
     console.log(`Test server started on http://localhost:${PORT}`);
   });
 
   try {
-    // Clean up any test users/vendors to make the test idempotent
-    const testUsers = await prisma.user.findMany({
-      where: {
-        email: { in: ['new_officer@vendorbridge.com', 'vendor_admin@globalelectronics.com'] }
+    // -------------------------------------------------------------
+    // Helper Logins
+    // -------------------------------------------------------------
+    const login = async (email, password) => {
+      const res = await fetch(`http://localhost:${PORT}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      return data.token;
+    };
+
+    const officerToken = await login('officer@vendorbridge.com', 'password123');
+    const headToken = await login('head@vendorbridge.com', 'password123');
+    const financeToken = await login('finance@vendorbridge.com', 'password123');
+    const vendor1Token = await login('vendor1@techcore.com', 'password123');
+    const vendor2Token = await login('vendor2@infrasupplies.com', 'password123');
+
+    // 1. Fetch Seeded RFQ to collect items
+    const rfqRes = await fetch(`http://localhost:${PORT}/api/rfqs`, {
+      headers: { Authorization: `Bearer ${officerToken}` },
+    });
+    const rfqs = await rfqRes.json();
+    const activeRfq = rfqs[0];
+    const chairItem = activeRfq.items.find(i => i.itemName === 'Ergonomic chairs');
+    const deskItem = activeRfq.items.find(i => i.itemName === 'Standing desks');
+
+    console.log(`\nActive RFQ Found: "${activeRfq.title}" (ID: ${activeRfq.id})`);
+
+    // 2. Vendor 1 (TechCore) submits a bid
+    // Chairs: 25 * 5000 = 125,000 | Desks: 10 * 12000 = 120,000 | Subtotal = 245,000
+    // Tax = 18% GST -> Total = 289,100
+    console.log('\n--- 1. Submitting Quotation from Vendor 1 (TechCore) ---');
+    const q1Res = await fetch(`http://localhost:${PORT}/api/quotations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${vendor1Token}`,
       },
-      select: { id: true }
-    });
-    const testUserIds = testUsers.map(u => u.id);
-
-    if (testUserIds.length > 0) {
-      await prisma.auditLog.deleteMany({
-        where: { userId: { in: testUserIds } }
-      });
-      await prisma.user.deleteMany({
-        where: { id: { in: testUserIds } }
-      });
-    }
-
-    await prisma.vendor.deleteMany({
-      where: { email: 'info@globalelectronics.com' }
-    });
-
-    // 1. Verify health
-    const healthRes = await fetch(`http://localhost:${PORT}/api/health`);
-    const healthData = await healthRes.json();
-    console.log('Health check payload:', healthData);
-
-    // 2. Test Registering a PROCUREMENT_OFFICER with extra fields
-    console.log('\n--- 2. Registering a new Procurement Officer with details ---');
-    const registerOfficerRes = await fetch(`http://localhost:${PORT}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'new_officer@vendorbridge.com',
-        name: 'Jane Officer Doe',
-        password: 'password123',
-        role: 'PROCUREMENT_OFFICER',
-        phone: '1234567890',
-        department: 'Regional Procurement Group',
-        designation: 'Lead Buyer',
-        approvalLimit: 75000.0,
+        rfqId: activeRfq.id,
+        deliveryDays: 12,
+        taxRate: 18.0,
+        terms: 'Payment term: Net 30',
+        items: [
+          { rfqItemId: chairItem.id, unitPrice: 5000.0 },
+          { rfqItemId: deskItem.id, unitPrice: 12000.0 },
+        ],
       }),
     });
-    const registerOfficerData = await registerOfficerRes.json();
-    console.log('Registration status:', registerOfficerRes.status);
-    console.log('Registered User details:', {
-      name: registerOfficerData.name,
-      role: registerOfficerData.role,
-      phone: registerOfficerData.phone,
-      department: registerOfficerData.department,
-      approvalLimit: registerOfficerData.approvalLimit,
-    });
+    const q1Data = await q1Res.json();
+    console.log('Vendor 1 bid status:', q1Res.status);
+    console.log('Vendor 1 bid total:', q1Data.totalAmount); // Should be 289100
 
-    if (registerOfficerRes.status !== 201) {
-      throw new Error(`Officer registration failed: ${JSON.stringify(registerOfficerData)}`);
+    if (q1Data.totalAmount !== 289100) {
+      throw new Error(`Cost calculation error: expected 289100, got ${q1Data.totalAmount}`);
     }
 
-    // 3. Test Registering a VENDOR user with inline company creation (newVendorDetails)
-    console.log('\n--- 3. Registering a Vendor User with inline company creation ---');
-    const registerVendorRes = await fetch(`http://localhost:${PORT}/api/auth/register`, {
+    // 3. Vendor 2 (Infra Supplies) submits a bid (Lower Price)
+    // Chairs: 25 * 3000 = 75,000 | Desks: 10 * 8200 = 82,000 | Subtotal = 157,000
+    // Tax = 18% GST -> Total = 185,260 (matches approx the screen wireframe total of ~185k)
+    console.log('\n--- 2. Submitting Quotation from Vendor 2 (Infra Supplies) ---');
+    const q2Res = await fetch(`http://localhost:${PORT}/api/quotations`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${vendor2Token}`,
+      },
       body: JSON.stringify({
-        email: 'vendor_admin@globalelectronics.com',
-        name: 'John Sales Lead',
-        password: 'password123',
-        role: 'VENDOR',
-        phone: '9998887776',
-        department: 'Sales & BD',
-        designation: 'VP Sales',
-        newVendorDetails: {
-          name: 'Global Electronics Corp',
-          category: 'IT Hardware',
-          gstNo: '24DDDDD4444D4Z4',
-          contactNo: '0792345678',
-          address: '401, Cyber Heights, GIDC',
-          city: 'Gandhinagar',
-          state: 'Gujarat',
-          pincode: '382010',
-          panNo: 'ABCDE9999X',
-          bankName: 'ICICI Bank Ltd',
-          bankAccNo: '999000888777',
-          ifscCode: 'ICIC0009990',
-          website: 'https://globalelectronics.com',
-          email: 'info@globalelectronics.com',
-        },
+        rfqId: activeRfq.id,
+        deliveryDays: 10,
+        taxRate: 18.0,
+        terms: 'Payment term: Net 45',
+        items: [
+          { rfqItemId: chairItem.id, unitPrice: 3000.0 },
+          { rfqItemId: deskItem.id, unitPrice: 8200.0 },
+        ],
       }),
     });
-    const registerVendorData = await registerVendorRes.json();
-    console.log('Vendor Registration status:', registerVendorRes.status);
-    console.log('Registered Vendor User linked vendorId:', registerVendorData.vendorId);
+    const q2Data = await q2Res.json();
+    console.log('Vendor 2 bid status:', q2Res.status);
+    console.log('Vendor 2 bid total:', q2Data.totalAmount); // Should be 185260
 
-    if (registerVendorRes.status !== 201) {
-      throw new Error(`Vendor registration failed: ${JSON.stringify(registerVendorData)}`);
+    if (q2Data.totalAmount !== 185260) {
+      throw new Error(`Cost calculation error: expected 185260, got ${q2Data.totalAmount}`);
     }
 
-    // 4. Login as newly registered Vendor and check returns
-    console.log('\n--- 4. Logging in as new Vendor User ---');
-    const loginRes = await fetch(`http://localhost:${PORT}/api/auth/login`, {
+    // 4. Compare Quotations Side-by-Side (Verify compare endpoint)
+    console.log('\n--- 3. Fetching Quotation Comparison Page ---');
+    const compareRes = await fetch(`http://localhost:${PORT}/api/quotations/compare?rfqId=${activeRfq.id}`, {
+      headers: { Authorization: `Bearer ${officerToken}` },
+    });
+    const compareData = await compareRes.json();
+    console.log('Compare status:', compareRes.status);
+    console.log('Compare quotes counts:', compareData.quotations?.length);
+    
+    // Assert lowest price is correctly flagged
+    const v1Quote = compareData.quotations.find(q => q.vendorId === q1Data.vendorId);
+    const v2Quote = compareData.quotations.find(q => q.vendorId === q2Data.vendorId);
+    console.log('Is TechCore flagged as lowest price?', v1Quote?.isLowestPrice); // false
+    console.log('Is Infra Supplies flagged as lowest price?', v2Quote?.isLowestPrice); // true
+
+    if (v1Quote?.isLowestPrice !== false || v2Quote?.isLowestPrice !== true) {
+      throw new Error('Comparison error: lowest price flag is incorrect');
+    }
+
+    // 5. Select Quotation to launch Approval Workflow
+    console.log('\n--- 4. Selecting Quotation 2 for Approval ---');
+    const selectRes = await fetch(`http://localhost:${PORT}/api/quotations/${q2Data.id}/select`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${officerToken}` },
+    });
+    const selectData = await selectRes.json();
+    console.log('Select status:', selectRes.status);
+    console.log('Selected workflow step:', selectData.workflow?.currentStep); // L1_PENDING
+
+    const workflowId = selectData.workflow?.id;
+
+    // 6. Rahul Mehta (PROCUREMENT_HEAD) L1 Review
+    console.log('\n--- 5. Approving L1 Review (Rahul Mehta) ---');
+    const approveL1Res = await fetch(`http://localhost:${PORT}/api/approvals/action`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${headToken}`,
+      },
       body: JSON.stringify({
-        email: 'vendor_admin@globalelectronics.com',
-        password: 'password123',
+        workflowId,
+        action: 'APPROVE',
+        remarks: 'Prices are competitive. Passed to L2.',
       }),
     });
-    const loginData = await loginRes.json();
-    console.log('Login status:', loginRes.status);
-    console.log('User Role:', loginData.user?.role);
-    console.log('User Linked Company Name:', loginData.user?.vendor?.name);
-    console.log('Vendor Company Bank Info:', {
-      bankName: loginData.user?.vendor?.bankName,
-      bankAccNo: loginData.user?.vendor?.bankAccNo,
-      rating: loginData.user?.vendor?.rating,
-      paymentTerms: loginData.user?.vendor?.paymentTerms,
-    });
+    const approveL1Data = await approveL1Res.json();
+    console.log('L1 status:', approveL1Res.status);
+    console.log('L1 Action workflow next step:', approveL1Data.currentStep); // L2_PENDING
 
-    if (!loginData.user?.vendor?.panNo) {
-      throw new Error('Vendor company profile was not populated correctly upon login');
+    if (approveL1Data.currentStep !== 'L2_PENDING') {
+      throw new Error('Approval workflow L1 state progression error');
     }
 
-    console.log('\n✅ Advanced Role-Based tests completed successfully!');
+    // 7. Priya Shah (FINANCE_MANAGER) L2 Approval
+    console.log('\n--- 6. Approving L2 Final Stage (Priya Shah) ---');
+    const approveL2Res = await fetch(`http://localhost:${PORT}/api/approvals/action`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${financeToken}`,
+      },
+      body: JSON.stringify({
+        workflowId,
+        action: 'APPROVE',
+        remarks: 'Budget aligned. Purchase Order generated.',
+      }),
+    });
+    const approveL2Data = await approveL2Res.json();
+    console.log('L2 status:', approveL2Res.status);
+    console.log('L2 Action workflow next step:', approveL2Data.currentStep); // APPROVED
+
+    if (approveL2Data.currentStep !== 'APPROVED') {
+      throw new Error('Approval workflow L2 state progression error');
+    }
+
+    // 8. Verify Purchase Order was auto-generated
+    console.log('\n--- 7. Verifying Purchase Order Generation ---');
+    const poListRes = await fetch(`http://localhost:${PORT}/api/pos`, {
+      headers: { Authorization: `Bearer ${officerToken}` },
+    });
+    const poList = await poListRes.json();
+    console.log('PO list count:', poList.length);
+    console.log('Auto-generated PO details:', {
+      poNumber: poList[0]?.poNumber,
+      vendorName: poList[0]?.vendor?.name,
+      totalAmount: poList[0]?.totalAmount,
+    });
+
+    if (poList.length === 0 || poList[0].totalAmount !== 185260) {
+      throw new Error('Purchase Order verification failed: mismatch in total value or PO not created');
+    }
+
+    console.log('\n✅ All Business Logic and Approval Chain tests passed successfully!');
   } catch (error) {
     console.error('❌ Advanced tests failed:', error);
   } finally {

@@ -10,7 +10,7 @@ const router = Router();
 
 // Secure all approval endpoints to Approver roles only
 router.use(authMiddleware);
-router.use(roleMiddleware(['APPROVER_L1', 'APPROVER_L2']));
+router.use(roleMiddleware(['ADMIN', 'PROCUREMENT_HEAD', 'FINANCE_MANAGER']));
 
 router.get('/pending', handleGetPendingWorkflows);
 router.post('/action', handleApprovalAction);

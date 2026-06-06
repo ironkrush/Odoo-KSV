@@ -55,3 +55,36 @@ export const handleSubmitQuotation = async (req, res, next) => {
     next(error);
   }
 };
+
+// --- Compare Quotations (Screen 7) ---
+export const handleGetQuotationsComparison = async (req, res, next) => {
+  try {
+    const rfqId = parseInt(req.query.rfqId);
+    if (isNaN(rfqId)) {
+      return res.status(400).json({ error: 'Valid rfqId parameter required' });
+    }
+
+    const comparison = await quotationsService.getQuotationsComparison(rfqId);
+    return res.status(200).json(comparison);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// --- Select Winning Quotation (Initiates Approval Workflow - Screen 7) ---
+export const handleSelectQuotation = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid quotation ID' });
+    }
+
+    const workflow = await quotationsService.selectQuotationForApproval(id, req.user.id);
+    return res.status(200).json({
+      message: 'Quotation successfully selected. L1 approval workflow initiated.',
+      workflow,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

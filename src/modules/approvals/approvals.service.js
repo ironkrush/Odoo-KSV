@@ -1,7 +1,25 @@
 import prisma from '../../config/db.js';
 
 export const getPendingWorkflows = async (role) => {
-  const currentStep = role === 'APPROVER_L1' ? 'L1_PENDING' : 'L2_PENDING';
+  if (role === 'ADMIN') {
+    return prisma.approvalWorkflow.findMany({
+      where: {
+        currentStep: { in: ['L1_PENDING', 'L2_PENDING'] },
+      },
+      include: {
+        quotation: {
+          include: {
+            rfq: true,
+            vendor: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  const currentStep = role === 'PROCUREMENT_HEAD' ? 'L1_PENDING' : role === 'FINANCE_MANAGER' ? 'L2_PENDING' : null;
+  if (!currentStep) return [];
 
   return prisma.approvalWorkflow.findMany({
     where: { currentStep },
@@ -37,12 +55,14 @@ export const submitApprovalAction = async (workflowId, action, remarks, actor) =
 
     const { role, id: actorId } = actor;
 
-    // Validate workflow step matches role
-    if (workflow.currentStep === 'L1_PENDING' && role !== 'APPROVER_L1') {
-      throw new Error('Forbidden: Only L1 Approvers can act on this workflow step');
-    }
-    if (workflow.currentStep === 'L2_PENDING' && role !== 'APPROVER_L2') {
-      throw new Error('Forbidden: Only L2 Approvers can act on this workflow step');
+    // Validate workflow step matches role (or bypass if ADMIN)
+    if (role !== 'ADMIN') {
+      if (workflow.currentStep === 'L1_PENDING' && role !== 'PROCUREMENT_HEAD') {
+        throw new Error('Forbidden: Only the Procurement Head can approve this L1 review step');
+      }
+      if (workflow.currentStep === 'L2_PENDING' && role !== 'FINANCE_MANAGER') {
+        throw new Error('Forbidden: Only the Finance Manager can approve this L2 approval step');
+      }
     }
 
     const currentStepName = workflow.currentStep === 'L1_PENDING' ? 'L1' : 'L2';
