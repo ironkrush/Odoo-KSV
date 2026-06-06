@@ -5,6 +5,7 @@ export interface RFQ {
   status: 'Draft' | 'Sent' | 'Received' | 'Closed';
   date: string;
   itemsCount: number;
+  deadline?: string;
 }
 
 export interface Quotation {

@@ -5,3 +5,5 @@ vendorFrontend/dist/
 .DS_Store
 *.log
 .env*
+*.db
+*.db-journal

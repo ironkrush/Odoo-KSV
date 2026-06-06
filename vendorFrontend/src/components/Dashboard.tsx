@@ -6,6 +6,7 @@ import { KPIMetric } from '../types';
 export interface PurchaseOrderRecord {
   id: string;
   vendor: string;
+  vendorName?: string;
   product: string;
   status: 'Delivered' | 'In Transit' | 'Pending Approval' | 'Cancelled';
   qty: number;
@@ -20,6 +21,7 @@ interface DashboardProps {
   onAddOrder: (newOrder: PurchaseOrderRecord) => void;
   onUpdateStatus: (id: string, newStatus: PurchaseOrderRecord['status']) => void;
   currentRole: 'Procurement Officer' | 'Vendor' | 'Manager / Approver' | 'Admin';
+  spendTrend?: { day: string; spend: number }[];
 }
 
 const dailySpend = [
@@ -50,7 +52,7 @@ function GradientBar(props: any) {
   );
 }
 
-export default function Dashboard({ metrics, orders, onViewAll, onAddOrder, onUpdateStatus, currentRole }: DashboardProps) {
+export default function Dashboard({ metrics, orders, onViewAll, onAddOrder, onUpdateStatus, currentRole, spendTrend }: DashboardProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -62,12 +64,12 @@ export default function Dashboard({ metrics, orders, onViewAll, onAddOrder, onUp
   const [newPrice, setNewPrice] = useState('15.00');
   const [newStatus, setNewStatus] = useState<PurchaseOrderRecord['status']>('Pending Approval');
 
-  const chartData = dailySpend.map(d => ({ name: d.day, val: d.spend }));
+  const chartData = (spendTrend || dailySpend).map(d => ({ name: d.day, val: d.spend }));
 
   const filteredOrders = useMemo(() => {
     return orders.filter(item => {
       const matchSearch =
-        item.vendor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.vendor || item.vendorName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.id.toLowerCase().includes(searchTerm.toLowerCase());
       const matchStatus = statusFilter === 'All' || item.status === statusFilter;
@@ -354,7 +356,7 @@ export default function Dashboard({ metrics, orders, onViewAll, onAddOrder, onUp
                 {filteredOrders.map((item) => (
                   <tr key={item.id} className="group hover:bg-neutral-50/70 transition-colors">
                     <td className="py-4 px-6 font-mono text-xs font-semibold text-neutral-500">{item.id}</td>
-                    <td className="py-4 px-2 font-bold text-sm text-black">{item.vendor}</td>
+                    <td className="py-4 px-2 font-bold text-sm text-black">{item.vendor || item.vendorName}</td>
                     <td className="py-4 px-2 text-xs text-neutral-500">{item.product}</td>
                     <td className="py-4 px-2">
                       <span className={`inline-block px-2.5 py-0.5 rounded border text-[10px] font-mono uppercase tracking-tight font-bold ${getStatusStyle(item.status)}`}>
