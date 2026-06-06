@@ -76,8 +76,8 @@ ${isOpen ? 'translate-x-0' : '-translate-x-full'
                   setIsOpen(false);
                 }}
                 className={`nav-indicator flex w-full items-center gap-3 rounded px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider transition-colors ${activeTab === 'dashboard'
-                    ? 'active bg-[#ededed] text-black font-bold'
-                    : 'text-neutral-700 hover:bg-[#ededed] hover:text-black'
+                  ? 'active bg-[#ededed] text-black font-bold'
+                  : 'text-neutral-700 hover:bg-[#ededed] hover:text-black'
                   }`}
               >
                 <LayoutGrid className="size-4 shrink-0" />
@@ -102,8 +102,8 @@ ${isOpen ? 'translate-x-0' : '-translate-x-full'
                       id="nav-item-rfqs"
                       onClick={() => { setActiveTab('rfqs'); setIsOpen(false); }}
                       className={`nav-indicator flex w-full items-center rounded py-1.5 text-left text-xs font-medium transition-colors ${activeTab === 'rfqs'
-                          ? 'active text-black font-bold'
-                          : 'text-neutral-500 hover:text-black'
+                        ? 'active text-black font-bold'
+                        : 'text-neutral-500 hover:text-black'
                         }`}
                     >
                       RFQs
@@ -112,8 +112,8 @@ ${isOpen ? 'translate-x-0' : '-translate-x-full'
                       id="nav-item-quotations"
                       onClick={() => { setActiveTab('quotations'); setIsOpen(false); }}
                       className={`nav-indicator flex w-full items-center rounded py-1.5 text-left text-xs font-medium transition-colors ${activeTab === 'quotations'
-                          ? 'active text-black font-bold'
-                          : 'text-neutral-500 hover:text-black'
+                        ? 'active text-black font-bold'
+                        : 'text-neutral-500 hover:text-black'
                         }`}
                     >
                       Quotations
@@ -122,8 +122,8 @@ ${isOpen ? 'translate-x-0' : '-translate-x-full'
                       id="nav-item-approvals"
                       onClick={() => { setActiveTab('approvals'); setIsOpen(false); }}
                       className={`nav-indicator flex w-full items-center rounded py-1.5 text-left text-xs font-medium transition-colors ${activeTab === 'approvals'
-                          ? 'active text-black font-bold'
-                          : 'text-neutral-500 hover:text-black'
+                        ? 'active text-black font-bold'
+                        : 'text-neutral-500 hover:text-black'
                         }`}
                     >
                       Approvals
@@ -140,8 +140,8 @@ ${isOpen ? 'translate-x-0' : '-translate-x-full'
                     setIsOpen(false);
                   }}
                   className={`nav-indicator flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm font-medium transition-colors ${activeTab === 'vendors' || activeTab === 'categories'
-                      ? 'active bg-[#ededed] text-black font-bold'
-                      : 'text-neutral-700 hover:bg-[#ededed] hover:text-black hover:font-bold'
+                    ? 'active bg-[#ededed] text-black font-bold'
+                    : 'text-neutral-700 hover:bg-[#ededed] hover:text-black hover:font-bold'
                     }`}
                 >
                   <span className="flex items-center gap-3">
@@ -160,8 +160,8 @@ ${isOpen ? 'translate-x-0' : '-translate-x-full'
                     setIsOpen(false);
                   }}
                   className={`nav-indicator flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm font-medium transition-colors ${activeTab === 'purchaseorders' || activeTab === 'invoices'
-                      ? 'active bg-[#ededed] text-black font-bold'
-                      : 'text-neutral-700 hover:bg-[#ededed] hover:text-black hover:font-bold'
+                    ? 'active bg-[#ededed] text-black font-bold'
+                    : 'text-neutral-700 hover:bg-[#ededed] hover:text-black hover:font-bold'
                     }`}
                 >
                   <span className="flex items-center gap-3">
@@ -180,8 +180,8 @@ ${isOpen ? 'translate-x-0' : '-translate-x-full'
                     setIsOpen(false);
                   }}
                   className={`nav-indicator flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm font-medium transition-colors ${activeTab === 'reports' || activeTab === 'activity'
-                      ? 'active bg-[#ededed] text-black font-bold'
-                      : 'text-neutral-700 hover:bg-[#ededed] hover:text-black hover:font-bold'
+                    ? 'active bg-[#ededed] text-black font-bold'
+                    : 'text-neutral-700 hover:bg-[#ededed] hover:text-black hover:font-bold'
                     }`}
                 >
                   <span className="flex items-center gap-3">

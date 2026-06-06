@@ -321,12 +321,11 @@ export default function App() {
                           <td className="text-right font-mono font-bold text-black pr-3">{rfq.itemsCount.toLocaleString()} units</td>
                           <td className="font-mono text-neutral-500">{rfq.date}</td>
                           <td className="text-right">
-                            <span className={`inline-block px-2 py-0.5 rounded border text-[10px] uppercase font-bold ${
-                              rfq.status === 'Sent' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                              rfq.status === 'Received' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                              rfq.status === 'Closed' ? 'bg-neutral-100 text-neutral-600 border-neutral-300' :
-                              'bg-neutral-50 text-neutral-800 border-neutral-200'
-                            }`}>
+                            <span className={`inline-block px-2 py-0.5 rounded border text-[10px] uppercase font-bold ${rfq.status === 'Sent' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                rfq.status === 'Received' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                  rfq.status === 'Closed' ? 'bg-neutral-100 text-neutral-600 border-neutral-300' :
+                                    'bg-neutral-50 text-neutral-800 border-neutral-200'
+                              }`}>
                               {rfq.status}
                             </span>
                           </td>
@@ -366,11 +365,10 @@ export default function App() {
                           <td className="text-right font-mono font-bold text-black">${q.amount.toLocaleString()}</td>
                           <td className="text-right font-mono">{q.deliveryTimeDays} working days</td>
                           <td className="text-right">
-                            <span className={`inline-block px-2.5 py-0.5 rounded border text-[10px] uppercase font-bold ${
-                              q.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
-                              q.status === 'Rejected' ? 'bg-rose-50 text-rose-700 border-rose-300' :
-                              'bg-amber-50 text-amber-700 border-amber-300'
-                            }`}>
+                            <span className={`inline-block px-2.5 py-0.5 rounded border text-[10px] uppercase font-bold ${q.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
+                                q.status === 'Rejected' ? 'bg-rose-50 text-rose-700 border-rose-300' :
+                                  'bg-amber-50 text-amber-700 border-amber-300'
+                              }`}>
                               {q.status}
                             </span>
                           </td>
@@ -486,11 +484,10 @@ export default function App() {
                               </div>
                             </td>
                             <td>
-                              <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${
-                                v.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                v.status === 'Onboarding' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                'bg-neutral-100 text-neutral-500 border-neutral-300'
-                              }`}>
+                              <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${v.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                  v.status === 'Onboarding' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                    'bg-neutral-100 text-neutral-500 border-neutral-300'
+                                }`}>
                                 {v.status}
                               </span>
                             </td>
@@ -567,12 +564,11 @@ export default function App() {
                           <td className="text-right font-mono text-neutral-400 px-2">${po.unitPrice.toFixed(2)}</td>
                           <td className="text-right font-mono font-bold text-black px-4">${po.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                           <td className="text-right pr-2">
-                            <span className={`inline-block px-2.5 py-0.5 rounded border text-[10px] font-mono font-bold uppercase ${
-                              po.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                              po.status === 'In Transit' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                              po.status === 'Pending Approval' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                              'bg-rose-50 text-rose-700 border-rose-200'
-                            }`}>
+                            <span className={`inline-block px-2.5 py-0.5 rounded border text-[10px] font-mono font-bold uppercase ${po.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                po.status === 'In Transit' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                  po.status === 'Pending Approval' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                    'bg-rose-50 text-rose-700 border-rose-200'
+                              }`}>
                               {po.status}
                             </span>
                           </td>
@@ -652,11 +648,10 @@ export default function App() {
                           <td className="text-right font-mono font-bold text-black">${inv.amount.toLocaleString()}</td>
                           <td className="text-right font-mono text-neutral-500">{inv.date}</td>
                           <td className="text-right">
-                            <span className={`inline-block px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${
-                              inv.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
-                              inv.status === 'Overdue' ? 'bg-rose-50 text-rose-700 border-rose-300 animate-pulse' :
-                              'bg-amber-100 text-amber-800 border-amber-300'
-                            }`}>
+                            <span className={`inline-block px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${inv.status === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
+                                inv.status === 'Overdue' ? 'bg-rose-50 text-rose-700 border-rose-300 animate-pulse' :
+                                  'bg-amber-100 text-amber-800 border-amber-300'
+                              }`}>
                               {inv.status}
                             </span>
                           </td>
