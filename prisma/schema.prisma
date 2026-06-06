@@ -1,0 +1,200 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --- Role-Based Access Control (RBAC) ---
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         String   // "PROCUREMENT_OFFICER" | "APPROVER_L1" | "APPROVER_L2" | "VENDOR"
+  vendorId     Int?     // Non-null ONLY if role is "VENDOR"
+  vendor       Vendor?  @relation(fields: [vendorId], references: [id])
+  
+  // Relations
+  rfqsCreated  RFQ[]
+  approvals    ApprovalAction[]
+  auditLogs    AuditLog[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// --- Vendors Profile ---
+model Vendor {
+  id        Int      @id @default(autoincrement())
+  name      String
+  category  String   // e.g., "IT Hardware", "Furniture", "Stationery", "Logistics"
+  gstNo     String   @unique
+  contactNo String
+  status    String   // "ACTIVE" | "PENDING" | "BLOCKED"
+  email     String   @unique
+  
+  // Relations
+  users           User[]
+  rfqInvitations  RFQVendor[]
+  quotations      Quotation[]
+  purchaseOrders  PurchaseOrder[]
+  invoices        Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- RFQ (Request For Quotation) ---
+model RFQ {
+  id          Int      @id @default(autoincrement())
+  title       String
+  category    String
+  deadline    DateTime
+  description String
+  status      String   // "DRAFT" | "PUBLISHED" | "UNDER_REVIEW" | "PO_GENERATED" | "CLOSED"
+  createdById Int
+  createdBy   User     @relation(fields: [createdById], references: [id])
+
+  // Relations
+  items           RFQItem[]
+  invitedVendors  RFQVendor[]
+  quotations      Quotation[]
+  purchaseOrders  PurchaseOrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RFQItem {
+  id             Int             @id @default(autoincrement())
+  rfqId          Int
+  rfq            RFQ             @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  itemName       String
+  quantity       Int
+  unit           String          // e.g., "pcs", "box", "kg"
+  
+  // Relations
+  quotationItems QuotationItem[]
+}
+
+// Joint table for RFQ invited vendors
+model RFQVendor {
+  rfqId    Int
+  vendorId Int
+  rfq      RFQ    @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@id([rfqId, vendorId])
+}
+
+// --- Quotations Submitted by Vendors ---
+model Quotation {
+  id           Int      @id @default(autoincrement())
+  rfqId        Int
+  rfq          RFQ      @relation(fields: [rfqId], references: [id])
+  vendorId     Int
+  vendor       Vendor   @relation(fields: [vendorId], references: [id])
+  deliveryDays Int
+  taxRate      Float    // e.g., 18.0 (for 18% GST)
+  terms        String?
+  totalAmount  Float
+  status       String   // "PENDING" | "ACCEPTED" | "REJECTED"
+
+  // Relations
+  items            QuotationItem[]
+  approvalWorkflow ApprovalWorkflow?
+  purchaseOrder    PurchaseOrder?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuotationItem {
+  id             Int       @id @default(autoincrement())
+  quotationId    Int
+  quotation      Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  rfqItemId      Int
+  rfqItem        RFQItem   @relation(fields: [rfqItemId], references: [id])
+  unitPrice      Float
+  totalPrice     Float
+}
+
+// --- Approval Workflow Engine ---
+model ApprovalWorkflow {
+  id             Int       @id @default(autoincrement())
+  rfqId          Int
+  quotationId    Int       @unique
+  quotation      Quotation @relation(fields: [quotationId], references: [id])
+  currentStep    String    // "L1_PENDING" | "L2_PENDING" | "APPROVED" | "REJECTED"
+  
+  // Relations
+  actions        ApprovalAction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ApprovalAction {
+  id         Int              @id @default(autoincrement())
+  workflowId Int
+  workflow   ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  step       String           // "L1" | "L2"
+  action     String           // "APPROVE" | "REJECT"
+  remarks    String?
+  actorId    Int
+  actor      User             @relation(fields: [actorId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+// --- Purchase Orders ---
+model PurchaseOrder {
+  id          Int      @id @default(autoincrement())
+  poNumber    String   @unique // Auto-generated e.g., PO-2026-0001
+  rfqId       Int
+  rfq         RFQ      @relation(fields: [rfqId], references: [id])
+  quotationId Int      @unique
+  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  vendorId    Int
+  vendor      Vendor   @relation(fields: [vendorId], references: [id])
+  poDate      DateTime @default(now())
+  dueDate     DateTime
+  status      String   // "DRAFT" | "SENT" | "COMPLETED"
+  totalAmount Float
+
+  // Relations
+  invoices    Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- Invoices ---
+model Invoice {
+  id            Int           @id @default(autoincrement())
+  invoiceNumber String        @unique
+  poId          Int
+  po            PurchaseOrder @relation(fields: [poId], references: [id])
+  vendorId      Int
+  vendor        Vendor        @relation(fields: [vendorId], references: [id])
+  invoiceDate   DateTime
+  dueDate       DateTime
+  status        String        // "PENDING_PAYMENT" | "PAID" | "OVERDUE"
+  totalAmount   Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- Write-Once Immutable Audit Log ---
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  action    String   // E.g., "RFQ_CREATED", "QUOTE_SUBMITTED", "PO_APPROVED"
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  details   String   // JSON string containing payload snapshots
+  timestamp DateTime @default(now())
+}
